@@ -17,7 +17,6 @@ public class IncomeController {
     private final IncomeService INCOME_SERVICE;
     private final Gson gson = new Gson();
 
-
     @Autowired
     public IncomeController(IncomeService INCOME_SERVICE) {
         this.INCOME_SERVICE = INCOME_SERVICE;
