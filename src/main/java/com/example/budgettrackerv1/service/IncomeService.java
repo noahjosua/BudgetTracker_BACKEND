@@ -12,32 +12,35 @@ import java.util.List;
 @Service
 public class IncomeService {
 
-    private final IncomeRepository incomeRepository;
+    private final IncomeRepository INCOME_REPOSITORY;
 
     @Autowired
     public IncomeService(IncomeRepository incomeRepository) {
-        this.incomeRepository = incomeRepository;
+        this.INCOME_REPOSITORY = incomeRepository;
     }
 
     public List<Income> getIncomes(){
-        return this.incomeRepository.findAll();
+        return this.INCOME_REPOSITORY.findAll();
     }
 
     public void save(Income income){
-        this.incomeRepository.save(income);
+        this.INCOME_REPOSITORY.save(income);
     }
 
     public void delete(int id){
-        this.incomeRepository.deleteById(id);
+        if(!this.INCOME_REPOSITORY.existsById(id)){
+            throw new RuntimeException("Income not found");
+        }
+        this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
     }
 
     public Income getById(int id){
-        return this.incomeRepository.findById(id).get();
+        return this.INCOME_REPOSITORY.findById(id).orElseThrow(() -> new RuntimeException("Income not found"));
     }
 
     public List<Income> getByPlannedDate(Date date){
         List<Income> incomesByPlannedDate = new ArrayList<>();
-        for(Income income : this.incomeRepository.findAll()){
+        for(Income income : this.INCOME_REPOSITORY.findAll()){
             if(income.getDatePlanned().equals(date)){
                 incomesByPlannedDate.add(income);
             }
@@ -47,7 +50,7 @@ public class IncomeService {
 
     public List<Income> getByCreatedDate(Date date){
         List<Income> incomesByCreatedDate = new ArrayList<>();
-        for(Income income : this.incomeRepository.findAll()){
+        for(Income income : this.INCOME_REPOSITORY.findAll()){
             if(income.getDateCreated().equals(date)){
                 incomesByCreatedDate.add(income);
             }
