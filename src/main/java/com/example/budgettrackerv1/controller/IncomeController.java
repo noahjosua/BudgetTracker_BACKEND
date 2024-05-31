@@ -1,6 +1,7 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
@@ -30,6 +31,12 @@ public class IncomeController {
             System.out.println(income);
         }
         return ResponseEntity.ok(gson.toJson(incomes));
+    }
+
+    @GetMapping("income/{id}")
+    public ResponseEntity<String> getIncomeById(@PathVariable int id) {
+        Income income = this.INCOME_SERVICE.getById(id);
+        return ResponseEntity.ok(gson.toJson(income));
     }
 
     @PostMapping("/saveIncome")

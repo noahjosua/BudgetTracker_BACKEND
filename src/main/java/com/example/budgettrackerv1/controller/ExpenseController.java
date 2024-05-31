@@ -32,6 +32,12 @@ public class ExpenseController {
         return ResponseEntity.ok(gson.toJson(expenses));
     }
 
+    @GetMapping("expense/{id}")
+    public ResponseEntity<String> getExpenseById(@PathVariable int id) {
+        Expense expense = this.EXPENSE_SERVICE.getById(id);
+        return ResponseEntity.ok(gson.toJson(expense));
+    }
+
     @PostMapping("/saveExpense")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
         Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
