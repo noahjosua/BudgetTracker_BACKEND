@@ -1,6 +1,7 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
@@ -21,6 +22,14 @@ public class ExpenseController {
     @Autowired
     public ExpenseController(ExpenseService EXPENSE_SERVICE) {
         this.EXPENSE_SERVICE = EXPENSE_SERVICE;
+    }
+
+    @GetMapping("expense/categories")
+    public ResponseEntity<String> getAllCategories() {
+        List<Category> categories = List.of(
+                Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
+        );
+        return ResponseEntity.ok(gson.toJson(categories));
     }
 
     @GetMapping("expenses")

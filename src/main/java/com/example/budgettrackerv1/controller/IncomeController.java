@@ -1,6 +1,7 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
@@ -22,6 +23,14 @@ public class IncomeController {
     @Autowired
     public IncomeController(IncomeService INCOME_SERVICE) {
         this.INCOME_SERVICE = INCOME_SERVICE;
+    }
+
+    @GetMapping("income/categories")
+    public ResponseEntity<String> getAllCategories() {
+        List<Category> categories = List.of(
+                Category.SALARY, Category.POCKET_MONEY, Category.ALIMENT, Category.CAPITAL_ASSETS, Category.RENTAL, Category.OTHER
+        );
+        return ResponseEntity.ok(gson.toJson(categories));
     }
 
     @GetMapping("incomes")
