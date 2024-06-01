@@ -1,7 +1,6 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
@@ -24,6 +23,14 @@ public class IncomeController {
     @Autowired
     public IncomeController(IncomeService INCOME_SERVICE) {
         this.INCOME_SERVICE = INCOME_SERVICE;
+    }
+
+    @GetMapping("income/categories")
+    public ResponseEntity<String> getAllCategories() {
+        List<Category> categories = List.of(
+                Category.SALARY, Category.POCKET_MONEY, Category.ALIMENT, Category.CAPITAL_ASSETS, Category.RENTAL, Category.OTHER
+        );
+        return ResponseEntity.ok(gson.toJson(categories));
     }
 
     @PostConstruct
@@ -75,6 +82,12 @@ public class IncomeController {
             System.out.println(income);
         }
         return ResponseEntity.ok(gson.toJson(incomes));
+    }
+
+    @GetMapping("income/{id}")
+    public ResponseEntity<String> getIncomeById(@PathVariable int id) {
+        Income income = this.INCOME_SERVICE.getById(id);
+        return ResponseEntity.ok(gson.toJson(income));
     }
 
     @PostMapping("/saveIncome")
