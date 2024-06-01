@@ -1,6 +1,8 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.MockData;
+import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
@@ -36,10 +38,10 @@ public class ExpenseController {
     @PostConstruct
     public void init() {
         /* Nur zum testen - sollte wieder gelöscht werden */
-        readAllExpensesFromDB();
-        saveExpenseToDB();
-        editExpenseInDB();
-        deleteExpenseFromDB();
+        //readAllExpensesFromDB();
+       // saveExpenseToDB();
+        //editExpenseInDB();
+        //deleteExpenseFromDB();
     }
 
     /* Nur zum sicherstellen, dass DB Zugriff funktioniert - sollte wieder gelöscht werden */

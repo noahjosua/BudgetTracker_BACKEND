@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS income
     amount      DECIMAL(10, 2) /* TODO muss frontend eingabe möglichkeit matchen */
     );
 
+/*
 INSERT INTO income (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'SALARY', 'Test 1', 2.50);
 
@@ -24,6 +25,7 @@ VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'CAPITAL_ASSETS', 'Test 4', 2.50);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'RENTAL', 'Test 5', 2.50);
+*/
 
 /* EXPENSE */
 
@@ -39,6 +41,7 @@ CREATE TABLE IF NOT EXISTS expense
     amount      DECIMAL(10, 2) /* TODO muss frontend eingabe möglichkeit matchen */
     );
 
+/*
 INSERT INTO expense (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'GROCERIES', 'Buch 1', 2.50);
 
@@ -53,3 +56,4 @@ VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'RENT', 'Buch 4', 2.50);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'EDUCATION', 'Buch 5', 2.50);
+*/
