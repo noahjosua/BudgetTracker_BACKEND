@@ -11,6 +11,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,8 +82,8 @@ public class IncomeController {
     @GetMapping("incomes")
     public ResponseEntity<String> getAllIncomes() {
         List<Income> incomes = INCOME_SERVICE.getIncomes();
-        if (expenses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No incomes found.")
+        if (incomes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No incomes found.");
         }
 
         for (Income income : incomes) {
