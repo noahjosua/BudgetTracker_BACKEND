@@ -12,9 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
 
 import static com.example.budgettrackerv1.TestDbConnectionForExpense.*;
 
@@ -80,6 +80,32 @@ public class ExpenseController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expense could not be retrieved from database.");
     }
+
+    /*
+    @GetMapping("/byDate/{date}")
+    public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, 1);
+        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+        Optional<List<Expense>> optionalExpense = this.EXPENSE_SERVICE.getByDate(firstDay, lastDay);
+        if (optionalExpense.isPresent()) {
+            List<Expense> expenses = optionalExpense.get();
+            for(Expense expense : expenses) {
+                System.out.println(expense);
+            }
+            String message = String.format("Expenses for month %s were retrieved from database.", calendar.get(Calendar.MONTH)+1);
+            Map<String, Object> response = Map.of(
+                    Constants.RESPONSE_MESSAGE_KEY, message,
+                    Constants.RESPONSE_ENTRY_KEY, expenses
+            );
+            return ResponseEntity.ok(this.GSON.toJson(response));
+        }
+        String message = String.format("Expenses for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH)+1);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+
+     */
 
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
