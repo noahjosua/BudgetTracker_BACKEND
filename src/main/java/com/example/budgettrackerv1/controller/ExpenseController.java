@@ -1,124 +1,159 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
-import java.util.List;
-import java.util.Optional;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.util.*;
+
+import static com.example.budgettrackerv1.TestDbConnectionForExpense.*;
 
 
 @RestController
 @CrossOrigin(origins = Constants.ALLOWED_ORIGIN)
+@RequestMapping(Constants.REQUEST_MAPPING_EXPENSE)
 public class ExpenseController {
 
     private final ExpenseService EXPENSE_SERVICE;
-    private final Gson gson = new Gson();
+    private final Gson GSON = new Gson();
 
     @Autowired
     public ExpenseController(ExpenseService EXPENSE_SERVICE) {
         this.EXPENSE_SERVICE = EXPENSE_SERVICE;
     }
 
-    @GetMapping("expense/categories")
-    public ResponseEntity<String> getAllCategories() {
-        List<Category> categories = List.of(
-                Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
-        );
-        return ResponseEntity.ok(gson.toJson(categories));
-    }
-
     @PostConstruct
     public void init() {
-        /* Nur zum testen - sollte wieder gelöscht werden */
-        readAllExpensesFromDB();
-        saveExpenseToDB();
-        editExpenseInDB();
-        deleteExpenseFromDB();
-    }
-
-    /* Nur zum sicherstellen, dass DB Zugriff funktioniert - sollte wieder gelöscht werden */
-    public void readAllExpensesFromDB() {
+        /* TODO Nur zum testen - sollte wieder gelöscht werden */
         System.out.println("#### EXPENSE CONTROLLER - READ FROM DB ####");
-        List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
-        for (Expense expense : expenses) {
-            System.out.println(expense);
-        }
-    }
-
-    public void saveExpenseToDB() {
+        readAllExpensesFromDB(this.EXPENSE_SERVICE);
         System.out.println("#### EXPENSE CONTROLLER - SAVE TO DB ####");
-        Expense expense = this.gson.fromJson(MockData.json1, Expense.class);
-        System.out.println(expense);
-        this.EXPENSE_SERVICE.save(expense);
-        System.out.println(expense);
-    }
-
-    public void editExpenseInDB() {
+        saveExpenseToDB(this.GSON, this.EXPENSE_SERVICE);
         System.out.println("#### EXPENSE CONTROLLER - EDIT TO DB ####");
-        Expense expenseToEdit = this.EXPENSE_SERVICE.getById(1);
-        System.out.printf("Expense to edit: %s.%n", expenseToEdit);
-        expenseToEdit.setAmount(300.00);
-        System.out.printf("Save updated expense %s.%n", expenseToEdit);
-        this.EXPENSE_SERVICE.save(expenseToEdit);
+        editExpenseInDB(this.EXPENSE_SERVICE);
+        // System.out.println("#### EXPENSE CONTROLLER - DELETE FROM DB ####");
+        //deleteExpenseFromDB(this.EXPENSE_SERVICE);
     }
 
-    public void deleteExpenseFromDB() {
-        System.out.println("#### EXPENSE CONTROLLER - DELETE FROM DB ####");
-        Expense expense = this.EXPENSE_SERVICE.getById(1);
-        this.EXPENSE_SERVICE.delete(expense.getId());
+    @GetMapping("/categories")
+    public ResponseEntity<String> getAllCategories() {
+        return ResponseEntity.ok(this.GSON.toJson(List.of(
+                Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
+        )));
     }
-    /* Ende */
 
-    @GetMapping("expenses")
+    @GetMapping("")
     public ResponseEntity<String> getAllExpenses() {
-        List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
-        if (expenses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.");
+        Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getExpenses();
+        if (optionalExpenses.isPresent()) {
+            List<Expense> expenses = optionalExpenses.get();
+            Map<String, Object> response = Map.of(
+                    Constants.RESPONSE_MESSAGE_KEY, "Expenses were retrieved from database.",
+                    Constants.RESPONSE_ENTRY_KEY, expenses
+            );
+            return ResponseEntity.ok(this.GSON.toJson(response));
         }
-
-        for (Expense expense : expenses) {
-            System.out.println(expense);
-        }
-        return ResponseEntity.ok(gson.toJson(expenses));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expenses could not be retrieved from database.");
     }
 
-    @GetMapping("expense/{id}")
+    @GetMapping("/byId/{id}")
     public ResponseEntity<String> getExpenseById(@PathVariable int id) {
-        if (id <= 0) {
-            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+        Optional<Expense> optionalExpense = this.EXPENSE_SERVICE.getById(id);
+        if (optionalExpense.isPresent()) {
+            Expense expense = optionalExpense.get();
+            String message = String.format("Expense with id %d was retrieved from database.", expense.getId());
+            Map<String, Object> response = Map.of(
+                    Constants.RESPONSE_MESSAGE_KEY, message,
+                    Constants.RESPONSE_ENTRY_KEY, expense
+            );
+            return ResponseEntity.ok(this.GSON.toJson(response));
         }
-        Expense expense = this.EXPENSE_SERVICE.getById(id);
-        if (expense == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
-        }
-        return ResponseEntity.ok(gson.toJson(expense));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expense could not be retrieved from database.");
     }
 
-    @PostMapping("/saveExpense")
+    /*
+    @GetMapping("/byDate/{date}")
+    public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, 1);
+        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+        Optional<List<Expense>> optionalExpense = this.EXPENSE_SERVICE.getByDate(firstDay, lastDay);
+        if (optionalExpense.isPresent()) {
+            List<Expense> expenses = optionalExpense.get();
+            for(Expense expense : expenses) {
+                System.out.println(expense);
+            }
+            String message = String.format("Expenses for month %s were retrieved from database.", calendar.get(Calendar.MONTH)+1);
+            Map<String, Object> response = Map.of(
+                    Constants.RESPONSE_MESSAGE_KEY, message,
+                    Constants.RESPONSE_ENTRY_KEY, expenses
+            );
+            return ResponseEntity.ok(this.GSON.toJson(response));
+        }
+        String message = String.format("Expenses for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH)+1);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+
+     */
+
+    @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
-        if(jsonExpense == null || jsonExpense.isEmpty()) {
+        try {
+            Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
+            System.out.println(expense);
+            boolean isSaved = this.EXPENSE_SERVICE.save(expense);
+            System.out.println(expense);
+            if (isSaved) {
+                String message = String.format("Expense with id %d was saved successfully.", expense.getId());
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, message,
+                        Constants.RESPONSE_ENTRY_KEY, expense
+                );
+                return ResponseEntity.ok(this.GSON.toJson(response));
+            }
+            String message = String.format("Expense with id %d could not be saved.", expense.getId());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.unprocessableEntity().body("Expense could not be deserialized.");
+        }
+    }
+
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der save?
+    @PutMapping("/update/{id}")
+    public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
+        if (jsonExpense == null || jsonExpense.isEmpty()) {
             String message = "Expense cannot be empty";
             return ResponseEntity.badRequest().body(message);
+        } else if (id <= 0) {
+            String message = "Expense ID must be a positive integer";
+            return ResponseEntity.badRequest().body(message);
         }
-        Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
+        Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
+        expense.setId(id);
         System.out.println(expense);
-        this.EXPENSE_SERVICE.save(expense);
-        System.out.println(expense);
-        String message = String.format("Expense with id %d was saved successfully", expense.getId());
+        try {
+            this.EXPENSE_SERVICE.update(expense);
+        } catch (Exception e) {
+            String message = String.format("Expense with id %d could not be found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
+        String message = String.format("Expense with id %d was updated successfully", id);
         return ResponseEntity.ok(message);
     }
 
-    @DeleteMapping("/deleteExpense/{id}")
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der save?
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
         if (id <= 0) {
             String message = "Expense ID must be a positive integer";
@@ -131,28 +166,6 @@ public class ExpenseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
         }
         String message = String.format("Expense with id %d was deleted successfully", id);
-        return ResponseEntity.ok(message);
-    }
-
-    @PutMapping("/updateExpense/{id}")
-    public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
-        if(jsonExpense == null || jsonExpense.isEmpty()) {
-            String message = "Expense cannot be empty";
-            return ResponseEntity.badRequest().body(message);
-        } else if (id <= 0) {
-            String message = "Expense ID must be a positive integer";
-            return ResponseEntity.badRequest().body(message);
-        }
-        Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
-        expense.setId(id);
-        System.out.println(expense);
-        try {
-            this.EXPENSE_SERVICE.update(expense);
-        } catch (Exception e) {
-            String message = String.format("Expense with id %d could not be found", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
-        }
-        String message = String.format("Expense with id %d was updated successfully", id);
         return ResponseEntity.ok(message);
     }
 }
