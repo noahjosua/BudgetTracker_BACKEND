@@ -3,13 +3,16 @@ package com.example.budgettrackerv1.controller;
 import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.model.Category;
+import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -80,6 +83,10 @@ public class IncomeController {
     @GetMapping("incomes")
     public ResponseEntity<String> getAllIncomes() {
         List<Income> incomes = INCOME_SERVICE.getIncomes();
+        if (incomes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No incomes found.");
+        }
+
         for (Income income : incomes) {
             System.out.println(income);
         }
@@ -88,12 +95,22 @@ public class IncomeController {
 
     @GetMapping("income/{id}")
     public ResponseEntity<String> getIncomeById(@PathVariable int id) {
+        if (id <= 0) {
+            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+        }
         Income income = this.INCOME_SERVICE.getById(id);
+        if (income == null || income.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
+        }
         return ResponseEntity.ok(gson.toJson(income));
     }
 
     @PostMapping("/saveIncome")
     public ResponseEntity<String> save(@RequestBody String jsonIncome) {
+        if(jsonIncome == null || jsonIncome.isEmpty()) {
+            String message = "Income cannot be empty";
+            return ResponseEntity.badRequest().body(message);
+        }
         Income income = this.gson.fromJson(jsonIncome, Income.class);
         System.out.println(income);
         this.INCOME_SERVICE.save(income);
@@ -104,8 +121,39 @@ public class IncomeController {
 
     @DeleteMapping("/deleteIncome/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
-        this.INCOME_SERVICE.delete(id);
+        if (id <= 0) {
+            String message = "Income ID must be a positive integer";
+            return ResponseEntity.badRequest().body(message);
+        }
+        try {
+            this.INCOME_SERVICE.delete(id);
+        } catch (Exception e) {
+            String message = String.format("Income with id %d could not be found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
         String message = String.format("Income with id %d was deleted successfully", id);
+        return ResponseEntity.ok(message);
+    }
+
+    @PutMapping("/updateIncome/{id}")
+    public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
+        if(jsonIncome == null || jsonIncome.isEmpty()) {
+            String message = "Income cannot be empty";
+            return ResponseEntity.badRequest().body(message);
+        } else if (id <= 0) {
+            String message = "Income ID must be a positive integer";
+            return ResponseEntity.badRequest().body(message);
+        }
+        Income income = this.gson.fromJson(jsonIncome, Income.class);
+        income.setId(id);
+        System.out.println(income);
+        try {
+            this.INCOME_SERVICE.update(income);
+        } catch (Exception e) {
+            String message = String.format("Income with id %d could not be found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
+        String message = String.format("Income with id %d was updated successfully", id);
         return ResponseEntity.ok(message);
     }
 }

@@ -1,13 +1,17 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.MockData;
+import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -78,6 +82,10 @@ public class ExpenseController {
     @GetMapping("expenses")
     public ResponseEntity<String> getAllExpenses() {
         List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
+        if (expenses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.")
+        }
+
         for (Expense expense : expenses) {
             System.out.println(expense);
         }
@@ -86,12 +94,22 @@ public class ExpenseController {
 
     @GetMapping("expense/{id}")
     public ResponseEntity<String> getExpenseById(@PathVariable int id) {
+        if (id <= 0) {
+            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+        }
         Expense expense = this.EXPENSE_SERVICE.getById(id);
+        if (expense == null || expense.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
+        }
         return ResponseEntity.ok(gson.toJson(expense));
     }
 
     @PostMapping("/saveExpense")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
+        if(jsonExpense == null || jsonExpense.isEmpty()) {
+            String message = "Expense cannot be empty";
+            return ResponseEntity.badRequest().body(message);
+        }
         Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
         System.out.println(expense);
         this.EXPENSE_SERVICE.save(expense);
@@ -102,8 +120,39 @@ public class ExpenseController {
 
     @DeleteMapping("/deleteExpense/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
-        this.EXPENSE_SERVICE.delete(id);
+        if (id <= 0) {
+            String message = "Expense ID must be a positive integer";
+            return ResponseEntity.badRequest().body(message);
+        }
+        try {
+            this.EXPENSE_SERVICE.delete(id);
+        } catch (Exception e) {
+            String message = String.format("Expense with id %d could not be found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
         String message = String.format("Expense with id %d was deleted successfully", id);
+        return ResponseEntity.ok(message);
+    }
+
+    @PutMapping("/updateExpense/{id}")
+    public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
+        if(jsonExpense == null || jsonExpense.isEmpty()) {
+            String message = "Expense cannot be empty";
+            return ResponseEntity.badRequest().body(message);
+        } else if (id <= 0) {
+            String message = "Expense ID must be a positive integer";
+            return ResponseEntity.badRequest().body(message);
+        }
+        Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
+        expense.setId(id);
+        System.out.println(expense);
+        try {
+            this.EXPENSE_SERVICE.update(expense);
+        } catch (Exception e) {
+            String message = String.format("Expense with id %d could not be found", id);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        }
+        String message = String.format("Expense with id %d was updated successfully", id);
         return ResponseEntity.ok(message);
     }
 }
