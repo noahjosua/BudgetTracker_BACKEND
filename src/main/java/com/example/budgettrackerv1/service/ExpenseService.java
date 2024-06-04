@@ -57,4 +57,12 @@ public class ExpenseService {
         }
         return expensesByCreatedDate;
     }
+
+    public void update(Expense expense){
+        if(!this.EXPENSE_REPOSITORY.existsById(expense.getId())){
+            throw new RuntimeException("Expense not found");
+        }
+        this.EXPENSE_REPOSITORY.save(expense);
+    }
+
 }

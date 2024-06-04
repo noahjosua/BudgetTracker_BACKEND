@@ -58,4 +58,11 @@ public class IncomeService {
         return incomesByCreatedDate;
     }
 
+    public void update(Income income){
+        if(!this.INCOME_REPOSITORY.existsById(income.getId())){
+            throw new RuntimeException("Income not found");
+        }
+        this.INCOME_REPOSITORY.save(income);
+    }
+
 }
