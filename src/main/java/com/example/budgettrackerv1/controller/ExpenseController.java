@@ -1,10 +1,12 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 import static com.example.budgettrackerv1.TestDbConnectionForExpense.*;
@@ -25,7 +28,9 @@ import static com.example.budgettrackerv1.TestDbConnectionForExpense.*;
 public class ExpenseController {
 
     private final ExpenseService EXPENSE_SERVICE;
-    private final Gson GSON = new Gson();
+    private final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+            .create();
 
     @Autowired
     public ExpenseController(ExpenseService EXPENSE_SERVICE) {
@@ -42,7 +47,7 @@ public class ExpenseController {
         System.out.println("#### EXPENSE CONTROLLER - EDIT TO DB ####");
         editExpenseInDB(this.EXPENSE_SERVICE);
         // System.out.println("#### EXPENSE CONTROLLER - DELETE FROM DB ####");
-        //deleteExpenseFromDB(this.EXPENSE_SERVICE);
+        // deleteExpenseFromDB(this.EXPENSE_SERVICE);
     }
 
     @GetMapping("/categories")
@@ -81,31 +86,30 @@ public class ExpenseController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expense could not be retrieved from database.");
     }
 
-    /*
+    // TODO NOAH: refactor
     @GetMapping("/byDate/{date}")
     public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH)+1, 1);
+        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, 1);
         LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+
         Optional<List<Expense>> optionalExpense = this.EXPENSE_SERVICE.getByDate(firstDay, lastDay);
         if (optionalExpense.isPresent()) {
             List<Expense> expenses = optionalExpense.get();
-            for(Expense expense : expenses) {
+            for (Expense expense : expenses) {
                 System.out.println(expense);
             }
-            String message = String.format("Expenses for month %s were retrieved from database.", calendar.get(Calendar.MONTH)+1);
+            String message = String.format("Expenses for month %s were retrieved from database.", calendar.get(Calendar.MONTH) + 1);
             Map<String, Object> response = Map.of(
                     Constants.RESPONSE_MESSAGE_KEY, message,
                     Constants.RESPONSE_ENTRY_KEY, expenses
             );
             return ResponseEntity.ok(this.GSON.toJson(response));
         }
-        String message = String.format("Expenses for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH)+1);
+        String message = String.format("Expenses for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH) + 1);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
     }
-
-     */
 
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {

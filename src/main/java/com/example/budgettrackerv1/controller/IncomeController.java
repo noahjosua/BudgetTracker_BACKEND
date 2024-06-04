@@ -1,16 +1,19 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.example.budgettrackerv1.TestDbConnectionForIncome.*;
@@ -21,8 +24,9 @@ import static com.example.budgettrackerv1.TestDbConnectionForIncome.*;
 public class IncomeController {
 
     private final IncomeService INCOME_SERVICE;
-    private final Gson GSON = new Gson();
-
+    private final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+            .create();
 
     @Autowired
     public IncomeController(IncomeService INCOME_SERVICE) {

@@ -2,6 +2,7 @@ package com.example.budgettrackerv1.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Entity
@@ -13,10 +14,10 @@ public class Expense {
     private Integer id;
 
     @Column(name = "date_created", nullable = false)
-    private Date dateCreated;
+    private LocalDate dateCreated;
 
     @Column(name = "date_planned", nullable = false)
-    private Date datePlanned;
+    private LocalDate datePlanned;
 
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -39,22 +40,22 @@ public class Expense {
     }
 
     @SuppressWarnings("unused")
-    public Date getDateCreated() {
+    public LocalDate getDateCreated() {
         return dateCreated;
     }
 
     @SuppressWarnings("unused")
-    public void setDateCreated(Date dateCreated) {
+    public void setDateCreated(LocalDate dateCreated) {
         this.dateCreated = dateCreated;
     }
 
     @SuppressWarnings("unused")
-    public Date getDatePlanned() {
+    public LocalDate getDatePlanned() {
         return datePlanned;
     }
 
     @SuppressWarnings("unused")
-    public void setDatePlanned(Date datePlanned) {
+    public void setDatePlanned(LocalDate datePlanned) {
         this.datePlanned = datePlanned;
     }
 
