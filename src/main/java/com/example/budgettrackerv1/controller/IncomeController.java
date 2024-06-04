@@ -99,7 +99,7 @@ public class IncomeController {
             return ResponseEntity.badRequest().body("Provided ID is not valid.");
         }
         Income income = this.INCOME_SERVICE.getById(id);
-        if (income == null || income.isEmpty()) {
+        if (income == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
         }
         return ResponseEntity.ok(gson.toJson(income));
