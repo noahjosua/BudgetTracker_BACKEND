@@ -3,6 +3,7 @@ package com.example.budgettrackerv1.controller;
 import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.model.Category;
+import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +83,10 @@ public class IncomeController {
     @GetMapping("incomes")
     public ResponseEntity<String> getAllIncomes() {
         List<Income> incomes = INCOME_SERVICE.getIncomes();
+        if (incomes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No incomes found.");
+        }
+
         for (Income income : incomes) {
             System.out.println(income);
         }
@@ -89,7 +95,13 @@ public class IncomeController {
 
     @GetMapping("income/{id}")
     public ResponseEntity<String> getIncomeById(@PathVariable int id) {
+        if (id <= 0) {
+            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+        }
         Income income = this.INCOME_SERVICE.getById(id);
+        if (income == null || income.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
+        }
         return ResponseEntity.ok(gson.toJson(income));
     }
 

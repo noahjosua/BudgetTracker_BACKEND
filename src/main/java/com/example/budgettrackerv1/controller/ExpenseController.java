@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -81,6 +82,10 @@ public class ExpenseController {
     @GetMapping("expenses")
     public ResponseEntity<String> getAllExpenses() {
         List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
+        if (expenses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.")
+        }
+
         for (Expense expense : expenses) {
             System.out.println(expense);
         }
@@ -89,7 +94,13 @@ public class ExpenseController {
 
     @GetMapping("expense/{id}")
     public ResponseEntity<String> getExpenseById(@PathVariable int id) {
+        if (id <= 0) {
+            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+        }
         Expense expense = this.EXPENSE_SERVICE.getById(id);
+        if (expense == null || expense.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
+        }
         return ResponseEntity.ok(gson.toJson(expense));
     }
 
