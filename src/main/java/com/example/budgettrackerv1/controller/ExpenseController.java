@@ -114,6 +114,7 @@ public class ExpenseController {
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
         try {
+            System.out.println(jsonExpense);
             Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
             System.out.println(expense);
             boolean isSaved = this.EXPENSE_SERVICE.save(expense);

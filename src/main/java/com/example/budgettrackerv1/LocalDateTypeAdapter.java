@@ -8,18 +8,21 @@ import java.time.format.DateTimeFormatter;
 
 public class LocalDateTypeAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
 
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Override
     public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
                                  final JsonSerializationContext context) {
-        return new JsonPrimitive(date.format(formatter));
+        return new JsonPrimitive(date.format(FORMATTER));
     }
 
     @Override
     public LocalDate deserialize(final JsonElement json, final Type typeOfT,
                                  final JsonDeserializationContext context) throws JsonParseException {
-        return LocalDate.parse(json.getAsString(), formatter);
+        String dateString = json.getAsString();
+        if (dateString.contains("T")) {
+            dateString = dateString.split("T")[0]; // Extract the date portion
+        }
+        return LocalDate.parse(dateString, FORMATTER);
     }
-
 }
