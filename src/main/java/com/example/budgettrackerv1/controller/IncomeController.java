@@ -1,7 +1,8 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.LocalDateTypeAdapter;
+import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
+import com.example.budgettrackerv1.helper.Helper;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
@@ -48,34 +49,40 @@ public class IncomeController {
 
     @GetMapping("/categories")
     public ResponseEntity<String> getAllCategories() {
-        return ResponseEntity.ok(GSON.toJson(List.of(
-                Category.SALARY, Category.POCKET_MONEY, Category.ALIMENT, Category.CAPITAL_ASSETS, Category.RENTAL, Category.OTHER
-        )));
+        try {
+            return ResponseEntity.ok(GSON.toJson(List.of(
+                    Category.SALARY, Category.POCKET_MONEY, Category.ALIMENT, Category.CAPITAL_ASSETS, Category.RENTAL, Category.OTHER
+            )));
+        } catch (Exception e) {
+            System.out.println("Could not serialize categories.");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO ist das der richtige code?
     }
 
-    // TODO NOAH: refactor
+
     @GetMapping("/byDate/{date}")
     public ResponseEntity<String> getIncomesByDate(@PathVariable Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, 1);
-        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+        Optional<LocalDate> firstDay = Helper.getDate(date, Constants.FIRST_DAY_KEY);
+        Optional<LocalDate> lastDay = Helper.getDate(date, Constants.LAST_DAY_KEY);
+        String messageSuccess = Helper.getSuccessMessageForByIdRequest(date, Constants.TYPE_INCOMES);
+        String messageError = Helper.getErrorMessageForByIdRequest(date, Constants.TYPE_INCOMES);
 
-        Optional<List<Income>> optionalIncomes = this.INCOME_SERVICE.getByDate(firstDay, lastDay);
-        if (optionalIncomes.isPresent()) {
-            List<Income> incomes = optionalIncomes.get();
-            for (Income income : incomes) {
-                System.out.println(income);
+        if (firstDay.isPresent() && lastDay.isPresent()) {
+            Optional<List<Income>> optionalIncomes = this.INCOME_SERVICE.getByDate(firstDay.get(), lastDay.get());
+            if (optionalIncomes.isPresent()) {
+                List<Income> incomes = optionalIncomes.get();
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, messageSuccess,
+                        Constants.RESPONSE_ENTRY_KEY, incomes
+                );
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                }
             }
-            String message = String.format("Incomes for month %s were retrieved from database.", calendar.get(Calendar.MONTH) + 1);
-            Map<String, Object> response = Map.of(
-                    Constants.RESPONSE_MESSAGE_KEY, message,
-                    Constants.RESPONSE_ENTRY_KEY, incomes
-            );
-            return ResponseEntity.ok(this.GSON.toJson(response));
         }
-        String message = String.format("Incomes for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH) + 1);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageError);
     }
 
     /*
@@ -93,6 +100,7 @@ public class IncomeController {
     }
      */
 
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense byId?
     @GetMapping("/byId/{id}")
     public ResponseEntity<String> getIncomeById(@PathVariable int id) {
         if (id <= 0) {
@@ -105,6 +113,7 @@ public class IncomeController {
         return ResponseEntity.ok(GSON.toJson(income));
     }
 
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonIncome) {
         if (jsonIncome == null || jsonIncome.isEmpty()) {
@@ -112,13 +121,12 @@ public class IncomeController {
             return ResponseEntity.badRequest().body(message);
         }
         Income income = this.GSON.fromJson(jsonIncome, Income.class);
-        System.out.println(income);
         this.INCOME_SERVICE.save(income);
-        System.out.println(income);
         String message = String.format("Income with id %d was saved successfully", income.getId());
         return ResponseEntity.ok(message);
     }
 
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @PutMapping("/update/{id}")
     public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
         if (jsonIncome == null || jsonIncome.isEmpty()) {
@@ -130,7 +138,6 @@ public class IncomeController {
         }
         Income income = this.GSON.fromJson(jsonIncome, Income.class);
         income.setId(id);
-        System.out.println(income);
         try {
             this.INCOME_SERVICE.update(income);
         } catch (Exception e) {
@@ -141,6 +148,7 @@ public class IncomeController {
         return ResponseEntity.ok(message);
     }
 
+    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
         if (id <= 0) {

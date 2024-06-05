@@ -1,7 +1,8 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.LocalDateTypeAdapter;
+import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
+import com.example.budgettrackerv1.helper.Helper;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
@@ -50,34 +51,39 @@ public class ExpenseController {
 
     @GetMapping("/categories")
     public ResponseEntity<String> getAllCategories() {
-        return ResponseEntity.ok(this.GSON.toJson(List.of(
-                Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
-        )));
+        try {
+            return ResponseEntity.ok(this.GSON.toJson(List.of(
+                    Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
+            )));
+        } catch (Exception e) {
+            System.out.println("Could not serialize categories.");
+        }
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO ist das der richtige code?
     }
 
-    // TODO NOAH: refactor
     @GetMapping("/byDate/{date}")
     public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, 1);
-        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+        Optional<LocalDate> firstDay = Helper.getDate(date, Constants.FIRST_DAY_KEY);
+        Optional<LocalDate> lastDay = Helper.getDate(date, Constants.LAST_DAY_KEY);
+        String messageSuccess = Helper.getSuccessMessageForByIdRequest(date, Constants.TYPE_EXPENSES);
+        String messageError = Helper.getErrorMessageForByIdRequest(date, Constants.TYPE_EXPENSES);
 
-        Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getByDate(firstDay, lastDay);
-        if (optionalExpenses.isPresent()) {
-            List<Expense> expenses = optionalExpenses.get();
-            for (Expense expense : expenses) {
-                System.out.println(expense);
+        if (firstDay.isPresent() && lastDay.isPresent()) {
+            Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getByDate(firstDay.get(), lastDay.get());
+            if (optionalExpenses.isPresent()) {
+                List<Expense> expenses = optionalExpenses.get();
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, messageSuccess,
+                        Constants.RESPONSE_ENTRY_KEY, expenses
+                );
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                }
             }
-            String message = String.format("Expenses for month %s were retrieved from database.", calendar.get(Calendar.MONTH) + 1);
-            Map<String, Object> response = Map.of(
-                    Constants.RESPONSE_MESSAGE_KEY, message,
-                    Constants.RESPONSE_ENTRY_KEY, expenses
-            );
-            return ResponseEntity.ok(this.GSON.toJson(response));
         }
-        String message = String.format("Expenses for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH) + 1);
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageError);
     }
 
     /*
@@ -106,7 +112,11 @@ public class ExpenseController {
                     Constants.RESPONSE_MESSAGE_KEY, message,
                     Constants.RESPONSE_ENTRY_KEY, expense
             );
-            return ResponseEntity.ok(this.GSON.toJson(response));
+            try {
+                return ResponseEntity.ok(this.GSON.toJson(response));
+            } catch (Exception e) {
+                System.out.println("Could not serialize response.");
+            }
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expense could not be retrieved from database.");
     }
@@ -114,18 +124,19 @@ public class ExpenseController {
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
         try {
-            System.out.println(jsonExpense);
             Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
-            System.out.println(expense);
             boolean isSaved = this.EXPENSE_SERVICE.save(expense);
-            System.out.println(expense);
             if (isSaved) {
                 String message = String.format("Expense with id %d was saved successfully.", expense.getId());
                 Map<String, Object> response = Map.of(
                         Constants.RESPONSE_MESSAGE_KEY, message,
                         Constants.RESPONSE_ENTRY_KEY, expense
                 );
-                return ResponseEntity.ok(this.GSON.toJson(response));
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                }
             }
             String message = String.format("Expense with id %d could not be saved.", expense.getId());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
@@ -146,7 +157,6 @@ public class ExpenseController {
         }
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
         expense.setId(id);
-        System.out.println(expense);
         try {
             this.EXPENSE_SERVICE.update(expense);
         } catch (Exception e) {

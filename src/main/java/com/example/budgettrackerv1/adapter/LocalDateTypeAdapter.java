@@ -1,8 +1,9 @@
-package com.example.budgettrackerv1;
+package com.example.budgettrackerv1.adapter;
 
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -12,7 +13,7 @@ public class LocalDateTypeAdapter implements JsonSerializer<LocalDate>, JsonDese
 
     @Override
     public JsonElement serialize(final LocalDate date, final Type typeOfSrc,
-                                 final JsonSerializationContext context) {
+                                 final JsonSerializationContext context) throws DateTimeException {
         return new JsonPrimitive(date.format(FORMATTER));
     }
 
