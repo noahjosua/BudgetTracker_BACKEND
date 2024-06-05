@@ -5,7 +5,9 @@ import com.example.budgettrackerv1.repository.IncomeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IncomeService {
@@ -20,6 +22,10 @@ public class IncomeService {
     // TODO -- an ExpenseService anpassen, wenn ihr einverstanden seid?
     public List<Income> getIncomes() {
         return this.INCOME_REPOSITORY.findAll();
+    }
+
+    public Optional<List<Income>> getByDate(LocalDate start, LocalDate end) {
+        return this.INCOME_REPOSITORY.findAllByLocalDatePlannedBetween(start, end);
     }
 
     // TODO -- an ExpenseService anpassen, wenn ihr einverstanden seid?

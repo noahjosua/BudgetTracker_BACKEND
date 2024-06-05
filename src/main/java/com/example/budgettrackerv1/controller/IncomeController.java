@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
 import static com.example.budgettrackerv1.TestDbConnectionForIncome.*;
 
@@ -53,6 +53,32 @@ public class IncomeController {
         )));
     }
 
+    // TODO NOAH: refactor
+    @GetMapping("/byDate/{date}")
+    public ResponseEntity<String> getIncomesByDate(@PathVariable Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        LocalDate firstDay = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, 1);
+        LocalDate lastDay = firstDay.withDayOfMonth(firstDay.lengthOfMonth());
+
+        Optional<List<Income>> optionalIncomes = this.INCOME_SERVICE.getByDate(firstDay, lastDay);
+        if (optionalIncomes.isPresent()) {
+            List<Income> incomes = optionalIncomes.get();
+            for (Income income : incomes) {
+                System.out.println(income);
+            }
+            String message = String.format("Incomes for month %s were retrieved from database.", calendar.get(Calendar.MONTH) + 1);
+            Map<String, Object> response = Map.of(
+                    Constants.RESPONSE_MESSAGE_KEY, message,
+                    Constants.RESPONSE_ENTRY_KEY, incomes
+            );
+            return ResponseEntity.ok(this.GSON.toJson(response));
+        }
+        String message = String.format("Incomes for month %s could not be retrieved from database.", calendar.get(Calendar.MONTH) + 1);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+    }
+
+    /*
     @GetMapping("")
     public ResponseEntity<String> getAllIncomes() {
         List<Income> incomes = INCOME_SERVICE.getIncomes();
@@ -65,6 +91,7 @@ public class IncomeController {
         }
         return ResponseEntity.ok(GSON.toJson(incomes));
     }
+     */
 
     @GetMapping("/byId/{id}")
     public ResponseEntity<String> getIncomeById(@PathVariable int id) {
