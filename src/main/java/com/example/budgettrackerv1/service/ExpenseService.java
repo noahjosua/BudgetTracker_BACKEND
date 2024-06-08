@@ -5,7 +5,6 @@ import com.example.budgettrackerv1.repository.ExpenseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -33,14 +32,9 @@ public class ExpenseService {
         }
     }
 
-    /*
     public Optional<List<Expense>> getByDate(LocalDate start, LocalDate end) {
-        Timestamp startTimestamp = Timestamp.valueOf(start.atStartOfDay());
-        Timestamp endTimestamp = Timestamp.valueOf(end.atStartOfDay().plusDays(1).minusNanos(1));
-        return this.EXPENSE_REPOSITORY.findAllByDateCreatedBetween(startTimestamp, endTimestamp);
+        return this.EXPENSE_REPOSITORY.findAllByLocalDatePlannedBetween(start, end);
     }
-
-     */
 
     public boolean save(Expense expense) {
         try {
