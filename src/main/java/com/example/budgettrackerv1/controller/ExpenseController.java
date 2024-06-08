@@ -136,51 +136,83 @@ public class ExpenseController {
                     return ResponseEntity.ok(this.GSON.toJson(response));
                 } catch (Exception e) {
                     System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
                 }
+            } else {
+                String message = String.format("Expense with id %d could not be saved.", expense.getId());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
             }
-            String message = String.format("Expense with id %d could not be saved.", expense.getId());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
         } catch (JsonSyntaxException e) {
             return ResponseEntity.unprocessableEntity().body("Expense could not be deserialized.");
+        } catch (Exception e) {
+            String message = "An unexpected error occurred while saving expense.";
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
     }
 
-    // TODO Errorhandling --> vielleicht so ähnlich wie in der save?
     @PutMapping("/update/{id}")
     public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
-        if (jsonExpense == null || jsonExpense.isEmpty()) {
-            String message = "Expense cannot be empty";
-            return ResponseEntity.badRequest().body(message);
-        } else if (id <= 0) {
-            String message = "Expense ID must be a positive integer";
+        if (id <= 0) {
+            String message = String.format("Expense with id %d could not be updated successfully.", id);
+            System.out.println("ID was a non-positive integer.");
             return ResponseEntity.badRequest().body(message);
         }
-        Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
-        expense.setId(id);
         try {
-            this.EXPENSE_SERVICE.update(expense);
-        } catch (Exception e) {
-            String message = String.format("Expense with id %d could not be found", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+            Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
+            expense.setId(id);
+            boolean isUpdated = this.EXPENSE_SERVICE.update(expense);
+
+            if (isUpdated) {
+                String message = String.format("Expense with id %d was updated successfully.", id);
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, message,
+                        Constants.RESPONSE_ENTRY_KEY, expense
+                );
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
+                }
+            } else {
+                String message = String.format("Expense with id %d could not be updated successfully.", id);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.unprocessableEntity().body("Expense could not be deserialized.");
+        } catch (Exception e){
+            String message = String.format("An unexpected error occurred while updating expense with id %d.", id);
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        String message = String.format("Expense with id %d was updated successfully", id);
-        return ResponseEntity.ok(message);
     }
 
-    // TODO Errorhandling --> vielleicht so ähnlich wie in der save?
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
         if (id <= 0) {
-            String message = "Expense ID must be a positive integer";
+            String message = String.format("Expense with id %d could not be deleted.", id);
+            System.out.println("ID was a non-positive integer.");
             return ResponseEntity.badRequest().body(message);
         }
         try {
-            this.EXPENSE_SERVICE.delete(id);
+            boolean isDeleted = this.EXPENSE_SERVICE.delete(id);
+            if(isDeleted) {
+                String message = String.format("Expense with id %d was deleted successfully.", id);
+                try {
+                    return ResponseEntity.ok(message);
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
+                }
+            } else {
+                String message = String.format("Expense with id %d could not be deleted.", id);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
         } catch (Exception e) {
-            String message = String.format("Expense with id %d could not be found", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+            String message = String.format("An unexpected error occurred while updating expense with id %d.", id);
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        String message = String.format("Expense with id %d was deleted successfully", id);
-        return ResponseEntity.ok(message);
     }
 }

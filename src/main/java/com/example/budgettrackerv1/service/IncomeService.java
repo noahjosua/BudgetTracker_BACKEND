@@ -33,24 +33,41 @@ public class IncomeService {
         return this.INCOME_REPOSITORY.findById(id).orElseThrow(() -> new RuntimeException("Income not found"));
     }
 
-    // TODO -- an ExpenseService anpassen, wenn ihr einverstanden seid?
-    public void save(Income income) {
-        this.INCOME_REPOSITORY.save(income);
+    public boolean save(Income income) {
+        try {
+            this.INCOME_REPOSITORY.save(income);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.out.printf("[%s] Could not save income with ID %d.%n", e.getLocalizedMessage(), income.getId());
+            return false;
+        }
     }
 
-    // TODO Errorhandling
-    public void delete(int id) {
+    public boolean delete(int id) {
         if (!this.INCOME_REPOSITORY.existsById(id)) {
-            throw new RuntimeException("Income not found");
+            System.out.printf("Could not find income with ID %d.%n", id);
+            return false;
         }
-        this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
+        try {
+            this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
+            return true;
+        } catch (Exception e) {
+            System.out.printf("[%s] Could not delete income with ID %d.%n", e.getLocalizedMessage(),id);
+            return false;
+        }
     }
 
-    // TODO Errorhandling
-    public void update(Income income) {
+    public boolean update(Income income) {
         if (!this.INCOME_REPOSITORY.existsById(income.getId())) {
-            throw new RuntimeException("Income not found");
+            System.out.printf("Could not find income with ID %d.%n", income.getId());
+            return false;
         }
-        this.INCOME_REPOSITORY.save(income);
+        try {
+            this.INCOME_REPOSITORY.save(income);
+            return true;
+        } catch (Exception e) {
+            System.out.printf("[%s] Could not save income with ID %d.%n", e.getLocalizedMessage(), income.getId());
+            return false;
+        }
     }
 }

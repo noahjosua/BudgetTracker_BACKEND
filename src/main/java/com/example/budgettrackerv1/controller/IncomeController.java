@@ -8,6 +8,7 @@ import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.service.IncomeService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -113,55 +114,100 @@ public class IncomeController {
         return ResponseEntity.ok(GSON.toJson(income));
     }
 
-    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonIncome) {
-        if (jsonIncome == null || jsonIncome.isEmpty()) {
-            String message = "Income cannot be empty";
-            return ResponseEntity.badRequest().body(message);
+        try {
+            Income income = this.GSON.fromJson(jsonIncome, Income.class);
+            boolean isSaved = this.INCOME_SERVICE.save(income);
+            if (isSaved) {
+                String message = String.format("Income with id %d was saved successfully.", income.getId());
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, message,
+                        Constants.RESPONSE_ENTRY_KEY, income
+                );
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
+                }
+            } else {
+                String message = String.format("Income with id %d could not be saved.", income.getId());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.unprocessableEntity().body("Income could not be deserialized.");
+        } catch (Exception e) {
+            String message = "An unexpected error occurred while saving income.";
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        Income income = this.GSON.fromJson(jsonIncome, Income.class);
-        this.INCOME_SERVICE.save(income);
-        String message = String.format("Income with id %d was saved successfully", income.getId());
-        return ResponseEntity.ok(message);
     }
 
-    // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @PutMapping("/update/{id}")
     public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
-        if (jsonIncome == null || jsonIncome.isEmpty()) {
-            String message = "Income cannot be empty";
-            return ResponseEntity.badRequest().body(message);
-        } else if (id <= 0) {
-            String message = "Income ID must be a positive integer";
+        if (id <= 0) {
+            String message = String.format("Income with id %d could not be updated successfully.", id);
+            System.out.println("ID was a non-positive integer.");
             return ResponseEntity.badRequest().body(message);
         }
-        Income income = this.GSON.fromJson(jsonIncome, Income.class);
-        income.setId(id);
         try {
-            this.INCOME_SERVICE.update(income);
+            Income income = this.GSON.fromJson(jsonIncome, Income.class);
+            income.setId(id);
+            boolean isUpdated = this.INCOME_SERVICE.update(income);
+
+            if (isUpdated) {
+                String message = String.format("Income with id %d was updated successfully.", id);
+                Map<String, Object> response = Map.of(
+                        Constants.RESPONSE_MESSAGE_KEY, message,
+                        Constants.RESPONSE_ENTRY_KEY, income
+                );
+                try {
+                    return ResponseEntity.ok(this.GSON.toJson(response));
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
+                }
+            } else {
+                String message = String.format("Income with id %d could not be updated successfully.", id);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.unprocessableEntity().body("Income could not be deserialized.");
         } catch (Exception e) {
-            String message = String.format("Income with id %d could not be found", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+            String message = String.format("An unexpected error occurred while updating income with id %d.", id);
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        String message = String.format("Income with id %d was updated successfully", id);
-        return ResponseEntity.ok(message);
     }
 
     // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
         if (id <= 0) {
-            String message = "Income ID must be a positive integer";
+            String message = String.format("Income with id %d could not be deleted.", id);
+            System.out.println("ID was a non-positive integer.");
             return ResponseEntity.badRequest().body(message);
         }
         try {
-            this.INCOME_SERVICE.delete(id);
+            boolean isDeleted = this.INCOME_SERVICE.delete(id);
+
+            if (isDeleted) {
+                String message = String.format("Income with id %d was deleted successfully.", id);
+                try {
+                    return ResponseEntity.ok(message);
+                } catch (Exception e) {
+                    System.out.println("Could not serialize response.");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal error while serializing response.");
+                }
+            } else {
+                String message = String.format("Income with id %d could not be deleted.", id);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
+            }
         } catch (Exception e) {
-            String message = String.format("Income with id %d could not be found", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(message);
+            String message = String.format("An unexpected error occurred while updating income with id %d.", id);
+            System.out.printf("Error: %s%n", e.getLocalizedMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(message);
         }
-        String message = String.format("Income with id %d was deleted successfully", id);
-        return ResponseEntity.ok(message);
     }
 }
