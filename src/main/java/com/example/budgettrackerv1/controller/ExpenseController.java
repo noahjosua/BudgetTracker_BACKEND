@@ -11,14 +11,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.*;
-
-import static com.example.budgettrackerv1.TestDbConnectionForExpense.*;
 
 
 @RestController
@@ -39,6 +38,7 @@ public class ExpenseController {
     @PostConstruct
     public void init() {
         /* TODO Nur zum testen - sollte wieder gelöscht werden */
+        /*
         System.out.println("#### EXPENSE CONTROLLER - READ FROM DB ####");
         readAllExpensesFromDB(this.EXPENSE_SERVICE);
         System.out.println("#### EXPENSE CONTROLLER - SAVE TO DB ####");
@@ -47,6 +47,8 @@ public class ExpenseController {
         editExpenseInDB(this.EXPENSE_SERVICE);
         // System.out.println("#### EXPENSE CONTROLLER - DELETE FROM DB ####");
         // deleteExpenseFromDB(this.EXPENSE_SERVICE);
+
+         */
     }
 
     @GetMapping("/categories")
@@ -57,16 +59,16 @@ public class ExpenseController {
             )));
         } catch (Exception e) {
             System.out.println("Could not serialize categories.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO ist das der richtige code?
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO ist das der richtige code?
     }
 
     @GetMapping("/byDate/{date}")
-    public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
+    public ResponseEntity<String> getExpensesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
         Optional<LocalDate> firstDay = Helper.getDate(date, Constants.FIRST_DAY_KEY);
         Optional<LocalDate> lastDay = Helper.getDate(date, Constants.LAST_DAY_KEY);
-        String messageSuccess = Helper.getSuccessMessageForByIdRequest(date, Constants.TYPE_EXPENSES);
-        String messageError = Helper.getErrorMessageForByIdRequest(date, Constants.TYPE_EXPENSES);
+        String messageSuccess = Helper.getSuccessMessageForByDateRequest(date, Constants.TYPE_EXPENSES);
+        String messageError = Helper.getErrorMessageForByDateRequest(date, Constants.TYPE_EXPENSES);
 
         if (firstDay.isPresent() && lastDay.isPresent()) {
             Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getByDate(firstDay.get(), lastDay.get());
@@ -85,22 +87,6 @@ public class ExpenseController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageError);
     }
-
-    /*
-    @GetMapping("")
-    public ResponseEntity<String> getAllExpenses() {
-        Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getExpenses();
-        if (optionalExpenses.isPresent()) {
-            List<Expense> expenses = optionalExpenses.get();
-            Map<String, Object> response = Map.of(
-                    Constants.RESPONSE_MESSAGE_KEY, "Expenses were retrieved from database.",
-                    Constants.RESPONSE_ENTRY_KEY, expenses
-            );
-            return ResponseEntity.ok(this.GSON.toJson(response));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expenses could not be retrieved from database.");
-    }
-     */
 
     @GetMapping("/byId/{id}")
     public ResponseEntity<String> getExpenseById(@PathVariable int id) {

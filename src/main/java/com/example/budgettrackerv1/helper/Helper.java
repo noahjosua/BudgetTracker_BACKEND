@@ -9,12 +9,12 @@ import java.util.*;
 public class Helper {
 
 
-    public static String getSuccessMessageForByIdRequest(Date date, String type) {
+    public static String getSuccessMessageForByDateRequest(Date date, String type) {
         Optional<Calendar> calendar = Helper.getCalendar(date);
         return calendar.map(value -> String.format("%s for month %s were retrieved from database.", type, value.get(Calendar.MONTH) + 1)).orElse(String.format("%s were retrieved from database.", type));
     }
 
-    public static String getErrorMessageForByIdRequest(Date date, String type) {
+    public static String getErrorMessageForByDateRequest(Date date, String type) {
         Optional<Calendar> calendar = Helper.getCalendar(date);
         return calendar.map(value -> String.format("%s for month %s could not be retrieved from database.", type, value.get(Calendar.MONTH) + 1)).orElse(String.format("%s could not be retrieved from database.", type));
     }

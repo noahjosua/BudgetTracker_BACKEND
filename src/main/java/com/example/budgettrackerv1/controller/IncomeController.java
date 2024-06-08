@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.example.budgettrackerv1.TestDbConnectionForIncome.*;
-
 @RestController
 @CrossOrigin(origins = Constants.ALLOWED_ORIGIN)
 @RequestMapping(Constants.REQUEST_MAPPING_INCOME)
@@ -37,6 +35,7 @@ public class IncomeController {
     @PostConstruct
     public void init() {
         /* Nur zum testen - sollte wieder gelöscht werden */
+        /*
         System.out.println("#### INCOME CONTROLLER - READ FROM DB ####");
         readAllIncomesFromDB(this.INCOME_SERVICE);
         System.out.println("#### INCOME CONTROLLER - SAVE TO DB ####");
@@ -45,6 +44,8 @@ public class IncomeController {
         editIncomeInDB(this.INCOME_SERVICE);
         //System.out.println("#### INCOME CONTROLLER - DELETE FROM DB ####");
         //deleteIncomeFromDB(this.INCOME_SERVICE);
+
+         */
     }
 
     @GetMapping("/categories")
@@ -64,8 +65,8 @@ public class IncomeController {
     public ResponseEntity<String> getIncomesByDate(@PathVariable Date date) {
         Optional<LocalDate> firstDay = Helper.getDate(date, Constants.FIRST_DAY_KEY);
         Optional<LocalDate> lastDay = Helper.getDate(date, Constants.LAST_DAY_KEY);
-        String messageSuccess = Helper.getSuccessMessageForByIdRequest(date, Constants.TYPE_INCOMES);
-        String messageError = Helper.getErrorMessageForByIdRequest(date, Constants.TYPE_INCOMES);
+        String messageSuccess = Helper.getSuccessMessageForByDateRequest(date, Constants.TYPE_INCOMES);
+        String messageError = Helper.getErrorMessageForByDateRequest(date, Constants.TYPE_INCOMES);
 
         if (firstDay.isPresent() && lastDay.isPresent()) {
             Optional<List<Income>> optionalIncomes = this.INCOME_SERVICE.getByDate(firstDay.get(), lastDay.get());
