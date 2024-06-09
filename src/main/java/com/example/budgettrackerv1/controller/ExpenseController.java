@@ -127,6 +127,7 @@ public class ExpenseController {
             String message = String.format("Expense with id %d could not be saved.", expense.getId());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(message);
         } catch (JsonSyntaxException e) {
+            System.out.println("Deserialization error: " + e.getMessage());
             return ResponseEntity.unprocessableEntity().body("Expense could not be deserialized.");
         }
     }

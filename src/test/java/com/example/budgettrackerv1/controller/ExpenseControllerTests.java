@@ -9,15 +9,13 @@ import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -37,7 +35,6 @@ public class ExpenseControllerTests {
     @Autowired
     private MockMvc mockMvc;
 
-    @Mock
     private final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
@@ -55,12 +52,10 @@ public class ExpenseControllerTests {
 
     @Test
     void getCategories_Status_200() throws Exception {
-        // Arrange
         List<Category> expectedCategories = Arrays.asList(
                 Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
         );
 
-        // Act & Assert
         mockMvc.perform(get("/api/expenses/categories"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(GSON.toJson(expectedCategories)));
@@ -68,96 +63,100 @@ public class ExpenseControllerTests {
 
     @Test
     void getAllExpensesByDate_Status_200() throws Exception {
-        // Arrange
-        Expense expense = createTestExpense();
+        List<Expense> expenses = List.of(createTestExpense());
+        when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.of(expenses));
 
-        List<Expense> expenses = List.of(expense);
-        Optional<LocalDate> startDate = Helper.getDate(new Date(), Constants.FIRST_DAY_KEY);
-        Optional<LocalDate> endDate = Helper.getDate(new Date(), Constants.LAST_DAY_KEY);
+        String messageSuccess = Helper.getSuccessMessageForByDateRequest(new Date(), Constants.TYPE_EXPENSES);
+        Map<String, Object> expectedResponse = Map.of(
+                Constants.RESPONSE_MESSAGE_KEY, messageSuccess,
+                Constants.RESPONSE_ENTRY_KEY, expenses
+        );
+        String jsonExpectedResponse = GSON.toJson(expectedResponse);
 
-        if (startDate.isPresent() && endDate.isPresent()) {
-            when(expenseService.getByDate(startDate.get(), endDate.get())).thenReturn(Optional.of(expenses));
-
-            String messageSuccess = Helper.getSuccessMessageForByDateRequest(new Date(), Constants.TYPE_EXPENSES);
-            Map<String, Object> expectedResponse = Map.of(
-                    Constants.RESPONSE_MESSAGE_KEY, messageSuccess,
-                    Constants.RESPONSE_ENTRY_KEY, expenses
-            );
-
-            // Act & Assert
-            mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
-                    .andExpect(status().isOk())
-                    .andExpect(content().string(GSON.toJson(expectedResponse)));
-        }
+        mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
+                .andExpect(status().isOk())
+                .andExpect(content().string(jsonExpectedResponse));
     }
 
     @Test
     void getAllExpensesByDate_Status_404() throws Exception {
-        // Arrange
-        Optional<LocalDate> startDate = Helper.getDate(new Date(), Constants.FIRST_DAY_KEY);
-        Optional<LocalDate> endDate = Helper.getDate(new Date(), Constants.LAST_DAY_KEY);
+        when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.empty());
 
-        if (startDate.isPresent() && endDate.isPresent()) {
-            when(expenseService.getByDate(startDate.get(), endDate.get())).thenReturn(Optional.empty());
-
-            // Act & Assert
-            mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
-                    .andExpect(status().isNotFound());
-        }
+        mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void getExpenseById_Status_200() throws Exception {
-        // Arrange
         Expense expense = createTestExpense();
         Optional<Expense> expectedExpenseOptional = Optional.of(expense);
-        when(expenseService.getById(expense.getId())).thenReturn(expectedExpenseOptional);
+        when(expenseService.getById(Mockito.any(Integer.class))).thenReturn(expectedExpenseOptional);
 
-        // Act & Assert
         mockMvc.perform(get("/api/expenses/byId/" + expense.getId()))
                 .andExpect(status().isOk());
     }
 
     @Test
     void getExpenseById_Status_404() throws Exception {
-        // Arrange
         Expense expense = createTestExpense();
-        when(expenseService.getById(expense.getId())).thenReturn(Optional.empty());
+        when(expenseService.getById(Mockito.any(Integer.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
         mockMvc.perform(get("/api/expenses/byId/" + expense.getId()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void saveExpense_Status_200() throws Exception {
-        // Arrange
         Expense expense = createTestExpense();
-        assertNotNull(expense, "The expense object should not be null");
-        System.out.println(expense);
-        String expenseJson = GSON.toJson(expense, Expense.class);
-        assertNotNull(expenseJson, "The converted JSON string should not be null");
-        /*
-        when(expenseService.save(expense)).thenReturn(true);
+        String jsonExpense = GSON.toJson(expense);
+        when(expenseService.save(Mockito.any(Expense.class))).thenReturn(true);
 
         String message = String.format("Expense with id %d was saved successfully.", expense.getId());
         Map<String, Object> response = Map.of(
                 Constants.RESPONSE_MESSAGE_KEY, message,
                 Constants.RESPONSE_ENTRY_KEY, expense
         );
+        String responseJson = GSON.toJson(response);
 
-        // Act & Assert
         mockMvc.perform(post("/api/expenses/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(GSON.toJson(expense)))
+                        .content(jsonExpense))
                 .andExpect(status().isOk())
-                .andExpect(content().string(GSON.toJson(response)));
-
-         */
+                .andExpect(content().string(responseJson));
     }
 
     @Test
     void saveExpense_Status_400() throws Exception {
+        Expense expense = createTestExpense();
+        String expenseJson = GSON.toJson(expense, Expense.class);
+        when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
+
+        String message = String.format("Expense with id %d could not be saved.", expense.getId());
+
+        mockMvc.perform(post("/api/expenses/save")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(expenseJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(message));
+    }
+
+    @Test
+    void updateExpense_Status_200() throws Exception {
+
+    }
+
+    @Test
+    void updateExpense_Status_404() throws Exception {
+
+    }
+
+    @Test
+    void deleteExpense_Status_200() throws Exception {
+
+    }
+
+    @Test
+    void deleteExpense_Status_404() throws Exception {
 
     }
 }
