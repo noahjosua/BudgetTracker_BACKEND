@@ -82,7 +82,7 @@ public class ExpenseController {
     public ResponseEntity<String> getAllExpenses() {
         List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
         if (expenses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.")
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.");
         }
 
         for (Expense expense : expenses) {
@@ -96,9 +96,14 @@ public class ExpenseController {
         if (id <= 0) {
             return ResponseEntity.badRequest().body("Provided ID is not valid.");
         }
-        Expense expense = this.EXPENSE_SERVICE.getById(id);
-        if (expense == null || expense.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense with ID %d not found", id));
+        Expense expense;
+        try {
+            expense = this.EXPENSE_SERVICE.getById(id);
+            if (expense == null /*|| expense.isEmpty()*/) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense could not be found. "));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Provided ID is not valid.");
         }
         return ResponseEntity.ok(gson.toJson(expense));
     }
