@@ -46,19 +46,31 @@ public class ExpenseService {
         }
     }
 
-    // TODO Errorhandling
-    public void update(Expense expense) {
+    public boolean update(Expense expense) {
         if (!this.EXPENSE_REPOSITORY.existsById(expense.getId())) {
-            throw new RuntimeException("Expense not found");
+            System.out.printf("Could not find expense with ID %d.%n", expense.getId());
+            return false;
         }
-        this.EXPENSE_REPOSITORY.save(expense);
+        try {
+            this.EXPENSE_REPOSITORY.save(expense);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.out.printf("[%s] Could not save expense with ID %d.%n", e.getLocalizedMessage(), expense.getId());
+            return false;
+        }
     }
 
-    // TODO Errorhandling
-    public void delete(int id) {
+    public boolean delete(int id) {
         if (!this.EXPENSE_REPOSITORY.existsById(id)) {
-            throw new RuntimeException("Expense not found");
+            System.out.printf("Could not find expense with ID %d.%n", id);
+            return false;
         }
-        this.EXPENSE_REPOSITORY.findById(id).ifPresent(this.EXPENSE_REPOSITORY::delete);
+        try {
+            this.EXPENSE_REPOSITORY.findById(id).ifPresent(this.EXPENSE_REPOSITORY::delete);
+            return true;
+        } catch (Exception e) {
+            System.out.printf("[%s] Could not delete expense with ID %d.%n", e.getLocalizedMessage(), id);
+            return false;
+        }
     }
 }
