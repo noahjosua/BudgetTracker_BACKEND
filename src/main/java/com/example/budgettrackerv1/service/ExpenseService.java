@@ -19,19 +19,6 @@ public class ExpenseService {
         this.EXPENSE_REPOSITORY = expenseRepository;
     }
 
-    public Optional<List<Expense>> getExpenses() {
-        return Optional.of(this.EXPENSE_REPOSITORY.findAll());
-    }
-
-    public Optional<Expense> getById(int id) {
-        try {
-            return this.EXPENSE_REPOSITORY.findById(id);
-        } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not get expense with ID %d.%n", e.getLocalizedMessage(), id);
-            return Optional.empty();
-        }
-    }
-
     public Optional<List<Expense>> getByDate(LocalDate start, LocalDate end) {
         return this.EXPENSE_REPOSITORY.findAllByLocalDatePlannedBetween(start, end);
     }
@@ -41,7 +28,7 @@ public class ExpenseService {
             this.EXPENSE_REPOSITORY.save(expense);
             return true;
         } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not save expense with ID %d.%n", e.getLocalizedMessage(), expense.getId());
+            System.out.printf("[%s] Could not save expense.%n", e.getLocalizedMessage());
             return false;
         }
     }
@@ -55,7 +42,7 @@ public class ExpenseService {
             this.EXPENSE_REPOSITORY.save(expense);
             return true;
         } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not save expense with ID %d.%n", e.getLocalizedMessage(), expense.getId());
+            System.out.printf("[%s] Could not update expense with ID %d.%n", e.getLocalizedMessage(), expense.getId());
             return false;
         }
     }
