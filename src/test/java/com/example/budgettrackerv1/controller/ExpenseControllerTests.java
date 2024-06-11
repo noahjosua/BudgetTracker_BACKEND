@@ -5,6 +5,7 @@ import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
 import com.example.budgettrackerv1.helper.ValidateEntryHelper;
 import com.example.budgettrackerv1.model.Category;
+import com.example.budgettrackerv1.model.ErrorResponse;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
@@ -14,6 +15,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -92,10 +94,7 @@ public class ExpenseControllerTests {
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(true);
 
         String message = String.format("Expense with id %d was saved successfully.", expense.getId());
-        Map<String, Object> response = Map.of(
-                Constants.RESPONSE_MESSAGE_KEY, message,
-                Constants.RESPONSE_ENTRY_KEY, expense
-        );
+        Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
         String responseJson = GSON.toJson(response);
 
         mockMvc.perform(post("/api/expenses/save")
@@ -108,16 +107,19 @@ public class ExpenseControllerTests {
     @Test
     void saveExpense_Status_400() throws Exception {
         Expense expense = createTestExpense();
-        String expenseJson = GSON.toJson(expense, Expense.class);
+        String jsonExpense = GSON.toJson(expense, Expense.class);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
 
-        String message = String.format("Expense with id %d could not be saved.", expense.getId());
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setMessage("Expense could not be saved.");
+        errorResponse.setCode(HttpStatus.BAD_REQUEST.value());
+        String responseJson = GSON.toJson(errorResponse);
 
         mockMvc.perform(post("/api/expenses/save")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(expenseJson))
+                        .content(jsonExpense))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(message));
+                .andExpect(content().string(responseJson));
     }
 
     @Test
