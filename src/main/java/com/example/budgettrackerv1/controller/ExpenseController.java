@@ -1,6 +1,7 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
+import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.helper.Helper;
 import com.example.budgettrackerv1.model.Category;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -85,22 +87,6 @@ public class ExpenseController {
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(messageError);
     }
-
-    /*
-    @GetMapping("")
-    public ResponseEntity<String> getAllExpenses() {
-        Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getExpenses();
-        if (optionalExpenses.isPresent()) {
-            List<Expense> expenses = optionalExpenses.get();
-            Map<String, Object> response = Map.of(
-                    Constants.RESPONSE_MESSAGE_KEY, "Expenses were retrieved from database.",
-                    Constants.RESPONSE_ENTRY_KEY, expenses
-            );
-            return ResponseEntity.ok(this.GSON.toJson(response));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Expenses could not be retrieved from database.");
-    }
-     */
 
     @GetMapping("/byId/{id}")
     public ResponseEntity<String> getExpenseById(@PathVariable int id) {
