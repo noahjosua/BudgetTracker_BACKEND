@@ -19,7 +19,6 @@ public class Helper {
         return calendar.map(value -> String.format("%s for month %s could not be retrieved from database.", type, value.get(Calendar.MONTH) + 1)).orElse(String.format("%s could not be retrieved from database.", type));
     }
 
-    // TODO LOGGING
     public static Optional<LocalDate> getDate(Date date, String key) {
         Optional<Map<String, LocalDate>> startEndDate = getStartAndEndDateAsMap(date);
         if (startEndDate.isPresent()) {
@@ -53,7 +52,7 @@ public class Helper {
                     Constants.LAST_DAY_KEY, lastDay
             ));
         } catch (IllegalArgumentException | NullPointerException | DateTimeException e) {
-            System.out.println("Could not get start and end Date!"); // TODO in welcher Reihenfolge Fehler fangen?
+            System.out.println("Could not get start and end Date!"); // TODO NOAH in welcher Reihenfolge Fehler fangen?
             return Optional.empty();
         }
     }

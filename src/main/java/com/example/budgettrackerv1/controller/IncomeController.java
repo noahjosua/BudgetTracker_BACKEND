@@ -1,9 +1,7 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.model.Category;
-import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.helper.Helper;
 import com.example.budgettrackerv1.model.Income;
@@ -16,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -90,16 +87,16 @@ public class IncomeController {
     }
 
     @GetMapping("/byId/{id}")
-    public ResponseEntity<String> getIncomeById(@PathVariable int id) {     
+    public ResponseEntity<String> getIncomeById(@PathVariable int id) {
         try {
-          Income income = this.INCOME_SERVICE.getById(id);
-          if (income == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Income with ID %d not found", id));
-          }
+            Income income = this.INCOME_SERVICE.getById(id);
+            if (income == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Income with ID %d not found", id));
+            }
+            return ResponseEntity.ok(GSON.toJson(income));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body("Provided ID is not valid."); // hilfreichere Message for user 
         }
-        return ResponseEntity.ok(gson.toJson(income));
     }
 
     @PostMapping("/save")

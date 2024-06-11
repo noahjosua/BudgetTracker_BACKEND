@@ -1,7 +1,6 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.MockData;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.helper.Helper;
 import com.example.budgettrackerv1.model.Category;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
 import java.time.LocalDate;
 import java.util.*;
