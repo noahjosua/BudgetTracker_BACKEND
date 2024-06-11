@@ -4,22 +4,23 @@ import com.example.budgettrackerv1.Constants;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Map;
+import java.util.Optional;
 
-public class Helper {
+public class GetEntriesByDateHelper {
 
-
-    public static String getSuccessMessageForByIdRequest(Date date, String type) {
-        Optional<Calendar> calendar = Helper.getCalendar(date);
+    public static String getSuccessMessageForByDateRequest(Date date, String type) {
+        Optional<Calendar> calendar = GetEntriesByDateHelper.getCalendar(date);
         return calendar.map(value -> String.format("%s for month %s were retrieved from database.", type, value.get(Calendar.MONTH) + 1)).orElse(String.format("%s were retrieved from database.", type));
     }
 
-    public static String getErrorMessageForByIdRequest(Date date, String type) {
-        Optional<Calendar> calendar = Helper.getCalendar(date);
+    public static String getErrorMessageForByDateRequest(Date date, String type) {
+        Optional<Calendar> calendar = GetEntriesByDateHelper.getCalendar(date);
         return calendar.map(value -> String.format("%s for month %s could not be retrieved from database.", type, value.get(Calendar.MONTH) + 1)).orElse(String.format("%s could not be retrieved from database.", type));
     }
 
-    // TODO LOGGING
     public static Optional<LocalDate> getDate(Date date, String key) {
         Optional<Map<String, LocalDate>> startEndDate = getStartAndEndDateAsMap(date);
         if (startEndDate.isPresent()) {
@@ -53,7 +54,7 @@ public class Helper {
                     Constants.LAST_DAY_KEY, lastDay
             ));
         } catch (IllegalArgumentException | NullPointerException | DateTimeException e) {
-            System.out.println("Could not get start and end Date!"); // TODO in welcher Reihenfolge Fehler fangen?
+            System.out.println("Could not get start and end Date!");
             return Optional.empty();
         }
     }
