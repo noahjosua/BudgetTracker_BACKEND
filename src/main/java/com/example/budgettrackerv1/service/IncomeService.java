@@ -19,18 +19,8 @@ public class IncomeService {
         this.INCOME_REPOSITORY = incomeRepository;
     }
 
-    // TODO -- an ExpenseService anpassen, wenn ihr einverstanden seid?
-    public List<Income> getIncomes() {
-        return this.INCOME_REPOSITORY.findAll();
-    }
-
     public Optional<List<Income>> getByDate(LocalDate start, LocalDate end) {
         return this.INCOME_REPOSITORY.findAllByLocalDatePlannedBetween(start, end);
-    }
-
-    // TODO -- an ExpenseService anpassen, wenn ihr einverstanden seid?
-    public Income getById(int id) {
-        return this.INCOME_REPOSITORY.findById(id).orElseThrow(() -> new RuntimeException("Income not found"));
     }
 
     public boolean save(Income income) {
@@ -38,7 +28,21 @@ public class IncomeService {
             this.INCOME_REPOSITORY.save(income);
             return true;
         } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not save income with ID %d.%n", e.getLocalizedMessage(), income.getId());
+            System.out.printf("[%s] Could not save income.%n", e.getLocalizedMessage());
+            return false;
+        }
+    }
+
+    public boolean update(Income income) {
+        if (!this.INCOME_REPOSITORY.existsById(income.getId())) {
+            System.out.printf("Could not find income with ID %d.%n", income.getId());
+            return false;
+        }
+        try {
+            this.INCOME_REPOSITORY.save(income);
+            return true;
+        } catch (IllegalArgumentException e) {
+            System.out.printf("[%s] Could not update income with ID %d.%n", e.getLocalizedMessage(), income.getId());
             return false;
         }
     }
@@ -52,21 +56,7 @@ public class IncomeService {
             this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
             return true;
         } catch (Exception e) {
-            System.out.printf("[%s] Could not delete income with ID %d.%n", e.getLocalizedMessage(),id);
-            return false;
-        }
-    }
-
-    public boolean update(Income income) {
-        if (!this.INCOME_REPOSITORY.existsById(income.getId())) {
-            System.out.printf("Could not find income with ID %d.%n", income.getId());
-            return false;
-        }
-        try {
-            this.INCOME_REPOSITORY.save(income);
-            return true;
-        } catch (Exception e) {
-            System.out.printf("[%s] Could not save income with ID %d.%n", e.getLocalizedMessage(), income.getId());
+            System.out.printf("[%s] Could not delete income with ID %d.%n", e.getLocalizedMessage(), id);
             return false;
         }
     }
