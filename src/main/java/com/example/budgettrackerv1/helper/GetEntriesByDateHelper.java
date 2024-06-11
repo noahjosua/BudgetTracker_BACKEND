@@ -1,6 +1,8 @@
 package com.example.budgettrackerv1.helper;
 
 import com.example.budgettrackerv1.Constants;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.time.DateTimeException;
 import java.time.LocalDate;
@@ -10,6 +12,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class GetEntriesByDateHelper {
+
+    private static final Logger LOGGER = LogManager.getLogger(GetEntriesByDateHelper.class);
 
     public static String getSuccessMessageForByDateRequest(Date date, String type) {
         Optional<Calendar> calendar = GetEntriesByDateHelper.getCalendar(date);
@@ -38,7 +42,7 @@ public class GetEntriesByDateHelper {
             calendar.setTime(date);
             return Optional.of(calendar);
         } catch (NullPointerException e) {
-            System.out.println("Could not get calendar!");
+            LOGGER.error("Could not get calendar from date {}.", date, e);
         }
         return Optional.empty();
     }
@@ -54,7 +58,7 @@ public class GetEntriesByDateHelper {
                     Constants.LAST_DAY_KEY, lastDay
             ));
         } catch (IllegalArgumentException | NullPointerException | DateTimeException e) {
-            System.out.println("Could not get start and end Date!");
+            LOGGER.error("Could not get calendar from date {}.", date, e);
             return Optional.empty();
         }
     }
@@ -65,7 +69,7 @@ public class GetEntriesByDateHelper {
                 return Optional.of(map.get(key));
             }
         } catch (ClassCastException | NullPointerException e) {
-            System.out.println("Could not get date!");
+            LOGGER.error("Could not get calendar from date for key {}.", key, e);
         }
         return Optional.empty();
     }

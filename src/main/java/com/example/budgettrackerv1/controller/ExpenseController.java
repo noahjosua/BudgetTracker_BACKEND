@@ -11,6 +11,8 @@ import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +30,8 @@ public class ExpenseController {
     private final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
+
+    private static final Logger LOGGER = LogManager.getLogger(ExpenseController.class);
 
     @Autowired
     public ExpenseController(ExpenseService EXPENSE_SERVICE) {
@@ -54,8 +58,10 @@ public class ExpenseController {
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(messageSuccess, optionalExpenses.get());
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
+            LOGGER.info("No Expenses were found for the specified date. Message: {}", messageError);
             throw new EntryNotFoundException(messageError);
         }
+        LOGGER.info("Could not get dates to query the database. Message: {}", messageError);
         throw new EntryNotFoundException(messageError);
     }
 
@@ -71,9 +77,10 @@ public class ExpenseController {
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not save expense.%n", e.getLocalizedMessage());
+            LOGGER.error("Could not save expense. Error: {}.", e.getLocalizedMessage(), e);
         }
-        throw new EntryNotProcessedException("Expense could not be saved.%n");
+        LOGGER.info("Expense could not be saved.");
+        throw new EntryNotProcessedException("Expense could not be saved.");
     }
 
     @PutMapping("/update/{id}")
@@ -88,9 +95,10 @@ public class ExpenseController {
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
-            System.out.printf("[%s] Could not update expense.%n", e.getLocalizedMessage());
+            LOGGER.error("Could not update expense. Error: {}.", e.getLocalizedMessage(), e);
         }
-        String message = String.format("Expense with id %d could not be updated successfully.", id);
+        String message = String.format("Expense with id %d could not be updated.", id);
+        LOGGER.info(message);
         throw new EntryNotProcessedException(message);
     }
 
@@ -102,6 +110,7 @@ public class ExpenseController {
             return ResponseEntity.ok(message);
         }
         String message = String.format("Expense with id %d could not be deleted.", id);
+        LOGGER.info(message);
         throw new EntryNotProcessedException(message);
     }
 }

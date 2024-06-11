@@ -6,49 +6,46 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EntryNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleEntryNotFoundException(EntryNotFoundException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", HttpStatus.NOT_FOUND.toString());
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleEntryNotFoundException(EntryNotFoundException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.NOT_FOUND.value());
+        response.setMessage(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(EntryNotProcessedException.class)
-    public ResponseEntity<Map<String, String>> handleEntryNotProcessedException(EntryNotProcessedException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", HttpStatus.BAD_REQUEST.toString());
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleEntryNotProcessedException(EntryNotProcessedException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setMessage(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({IllegalArgumentException.class})
-    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", HttpStatus.BAD_REQUEST.toString());
-        response.put("message", ex.getMessage());
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.BAD_REQUEST.value());
+        response.setMessage(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(JsonSyntaxException.class)
-    public ResponseEntity<Map<String, String>> handleJsonSyntaxException(JsonSyntaxException ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.toString());
-        response.put("message", "Could not parse JSON.");
+    public ResponseEntity<ErrorResponse> handleJsonSyntaxException(JsonSyntaxException ignoredEx) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage("Could not parse JSON.");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleException(Exception ex) {
-        Map<String, String> response = new HashMap<>();
-        response.put("code", HttpStatus.INTERNAL_SERVER_ERROR.toString());
-        response.put("message", "An unexpected error occurred.");
+    public ResponseEntity<ErrorResponse> handleException(Exception ignoredEx) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage("An unexpected error occurred.");
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

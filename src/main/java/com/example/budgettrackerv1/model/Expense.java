@@ -3,6 +3,7 @@ package com.example.budgettrackerv1.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "expense")
@@ -86,6 +87,19 @@ public class Expense implements Entry {
     @SuppressWarnings("unused")
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Expense expense = (Expense) o;
+        return Double.compare(amount, expense.amount) == 0 && Objects.equals(id, expense.id) && Objects.equals(dateCreated, expense.dateCreated) && Objects.equals(datePlanned, expense.datePlanned) && category == expense.category && Objects.equals(description, expense.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dateCreated, datePlanned, category, description, amount);
     }
 
     @Override
