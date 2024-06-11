@@ -63,7 +63,7 @@ public class IncomeController {
     public ResponseEntity<String> save(@RequestBody String jsonIncome) {
         Income income = this.GSON.fromJson(jsonIncome, Income.class);
         try {
-            ValidateEntryHelper.isValidEntry(income);
+            ValidateEntryHelper.isValid(income);
             boolean isSaved = this.INCOME_SERVICE.save(income);
             if (isSaved) {
                 String message = String.format("Income with id %d was saved successfully.", income.getId());
@@ -80,7 +80,7 @@ public class IncomeController {
     public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
         Income income = this.GSON.fromJson(jsonIncome, Income.class);
         try {
-            ValidateEntryHelper.isValidEntry(income);
+            ValidateEntryHelper.isValid(income);
             boolean isUpdated = this.INCOME_SERVICE.update(income);
             if (isUpdated) {
                 String message = String.format("Income with id %d was updated successfully.", id);

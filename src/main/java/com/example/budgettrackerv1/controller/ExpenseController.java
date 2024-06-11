@@ -63,7 +63,7 @@ public class ExpenseController {
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
         try {
-            ValidateEntryHelper.isValidEntry(expense);
+            ValidateEntryHelper.isValid(expense);
             boolean isSaved = this.EXPENSE_SERVICE.save(expense);
             if (isSaved) {
                 String message = String.format("Expense with id %d was saved successfully.", expense.getId());
@@ -80,7 +80,7 @@ public class ExpenseController {
     public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
         try {
-            ValidateEntryHelper.isValidEntry(expense);
+            ValidateEntryHelper.isValid(expense);
             boolean isUpdated = this.EXPENSE_SERVICE.update(expense);
             if (isUpdated) {
                 String message = String.format("Expense with id %d was updated successfully.", id);
