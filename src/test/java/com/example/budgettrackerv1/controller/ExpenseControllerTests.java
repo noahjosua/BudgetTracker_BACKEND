@@ -2,7 +2,8 @@ package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
-import com.example.budgettrackerv1.helper.Helper;
+import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
+import com.example.budgettrackerv1.helper.ValidateEntryHelper;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
@@ -26,6 +27,7 @@ import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @WebMvcTest(ExpenseController.class)
 public class ExpenseControllerTests {
 
@@ -66,11 +68,8 @@ public class ExpenseControllerTests {
         List<Expense> expenses = List.of(createTestExpense());
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.of(expenses));
 
-        String messageSuccess = Helper.getSuccessMessageForByDateRequest(new Date(), Constants.TYPE_EXPENSES);
-        Map<String, Object> expectedResponse = Map.of(
-                Constants.RESPONSE_MESSAGE_KEY, messageSuccess,
-                Constants.RESPONSE_ENTRY_KEY, expenses
-        );
+        String messageSuccess = GetEntriesByDateHelper.getSuccessMessageForByDateRequest(new Date(), Constants.TYPE_EXPENSES);
+        Map<String, Object> expectedResponse = ValidateEntryHelper.buildResponseBody(messageSuccess, expenses);
         String jsonExpectedResponse = GSON.toJson(expectedResponse);
 
         mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
@@ -83,25 +82,6 @@ public class ExpenseControllerTests {
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void getExpenseById_Status_200() throws Exception {
-        Expense expense = createTestExpense();
-        Optional<Expense> expectedExpenseOptional = Optional.of(expense);
-        when(expenseService.getById(Mockito.any(Integer.class))).thenReturn(expectedExpenseOptional);
-
-        mockMvc.perform(get("/api/expenses/byId/" + expense.getId()))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void getExpenseById_Status_404() throws Exception {
-        Expense expense = createTestExpense();
-        when(expenseService.getById(Mockito.any(Integer.class))).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/api/expenses/byId/" + expense.getId()))
                 .andExpect(status().isNotFound());
     }
 

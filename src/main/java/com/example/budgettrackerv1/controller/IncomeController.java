@@ -74,6 +74,7 @@ public class IncomeController {
             if (isSaved) {
                 String message = String.format("Income with id %d was saved successfully.", income.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, income);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
@@ -92,6 +93,7 @@ public class IncomeController {
             if (isUpdated) {
                 String message = String.format("Income with id %d was updated successfully.", id);
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, income);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
@@ -107,6 +109,7 @@ public class IncomeController {
         boolean isDeleted = this.INCOME_SERVICE.delete(id);
         if (isDeleted) {
             String message = String.format("Income with id %d was deleted successfully.", id);
+            LOGGER.info(message);
             return ResponseEntity.ok(message);
         }
         String message = String.format("Income with id %d could not be deleted.", id);

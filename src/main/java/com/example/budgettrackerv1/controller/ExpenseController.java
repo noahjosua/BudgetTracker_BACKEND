@@ -74,6 +74,7 @@ public class ExpenseController {
             if (isSaved) {
                 String message = String.format("Expense with id %d was saved successfully.", expense.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
@@ -92,6 +93,7 @@ public class ExpenseController {
             if (isUpdated) {
                 String message = String.format("Expense with id %d was updated successfully.", id);
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
         } catch (IllegalArgumentException e) {
@@ -107,6 +109,7 @@ public class ExpenseController {
         boolean isDeleted = this.EXPENSE_SERVICE.delete(id);
         if (isDeleted) {
             String message = String.format("Expense with id %d was deleted successfully.", id);
+            LOGGER.info(message);
             return ResponseEntity.ok(message);
         }
         String message = String.format("Expense with id %d could not be deleted.", id);
