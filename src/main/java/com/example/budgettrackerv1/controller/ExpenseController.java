@@ -58,7 +58,7 @@ public class ExpenseController {
         } catch (Exception e) {
             System.out.println("Could not serialize categories.");
         }
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO ist das der richtige code?
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build(); // TODO NOAH ist das der richtige code?
     }
 
     @GetMapping("/byDate/{date}")
