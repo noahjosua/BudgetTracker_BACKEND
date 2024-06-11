@@ -146,11 +146,6 @@ public class IncomeController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
-        if (id <= 0) {
-            String message = String.format("Income with id %d could not be updated successfully.", id);
-            System.out.println("ID was a non-positive integer.");
-            return ResponseEntity.badRequest().body(message);
-        }
         try {
             Income income = this.GSON.fromJson(jsonIncome, Income.class);
             income.setId(id);
@@ -184,11 +179,6 @@ public class IncomeController {
     // TODO Errorhandling --> vielleicht so ähnlich wie in der Expense save?
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
-        if (id <= 0) {
-            String message = String.format("Income with id %d could not be deleted.", id);
-            System.out.println("ID was a non-positive integer.");
-            return ResponseEntity.badRequest().body(message);
-        }
         try {
             boolean isDeleted = this.INCOME_SERVICE.delete(id);
 

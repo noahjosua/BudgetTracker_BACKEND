@@ -153,11 +153,6 @@ public class ExpenseController {
 
     @PutMapping("/update/{id}")
     public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
-        if (id <= 0) {
-            String message = String.format("Expense with id %d could not be updated successfully.", id);
-            System.out.println("ID was a non-positive integer.");
-            return ResponseEntity.badRequest().body(message);
-        }
         try {
             Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
             expense.setId(id);
@@ -190,11 +185,6 @@ public class ExpenseController {
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
-        if (id <= 0) {
-            String message = String.format("Expense with id %d could not be deleted.", id);
-            System.out.println("ID was a non-positive integer.");
-            return ResponseEntity.badRequest().body(message);
-        }
         try {
             boolean isDeleted = this.EXPENSE_SERVICE.delete(id);
             if(isDeleted) {
