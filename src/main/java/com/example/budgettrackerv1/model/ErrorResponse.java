@@ -1,4 +1,4 @@
-package com.example.budgettrackerv1.exception;
+package com.example.budgettrackerv1.model;
 
 public class ErrorResponse {
 

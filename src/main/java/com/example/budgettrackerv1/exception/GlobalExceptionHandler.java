@@ -1,5 +1,6 @@
 package com.example.budgettrackerv1.exception;
 
+import com.example.budgettrackerv1.model.ErrorResponse;
 import com.google.gson.JsonSyntaxException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
