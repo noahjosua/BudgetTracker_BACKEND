@@ -1,5 +1,7 @@
 package com.example.budgettrackerv1.service;
 
+import com.example.budgettrackerv1.exception.EntryNotFoundException;
+import com.example.budgettrackerv1.exception.EntryNotProcessedException;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.repository.ExpenseRepository;
 import org.apache.logging.log4j.LogManager;
@@ -33,36 +35,38 @@ public class ExpenseService {
             this.EXPENSE_REPOSITORY.save(expense);
             return true;
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Could not save expense. Error: {}",  e.getLocalizedMessage(), e);
-            return false;
+            LOGGER.error("Could not save expense. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not save expense. Error: %s", e.getLocalizedMessage()));
         }
     }
 
     public boolean update(Expense expense) {
-        if (!this.EXPENSE_REPOSITORY.existsById(expense.getId())) {
-            LOGGER.debug("Could not find expense with ID {}.", expense.getId());
-            return false;
-        }
         try {
-            this.EXPENSE_REPOSITORY.save(expense);
-            return true;
+            Optional<Expense> expenseOptional = this.EXPENSE_REPOSITORY.findById(expense.getId());
+            if (expenseOptional.isPresent()) {
+                this.delete(expense.getId());
+                this.EXPENSE_REPOSITORY.save(expense);
+                return true;
+            }
+            throw new EntryNotFoundException("Expense not found. Could not update expense.");
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Could not update expense with ID {}. Error: {}", expense.getAmount(), e.getLocalizedMessage(), e);
-            return false;
+            LOGGER.error("Could not update expense. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not update expense. Error: %s", e.getLocalizedMessage()));
         }
     }
 
     public boolean delete(int id) {
-        if (!this.EXPENSE_REPOSITORY.existsById(id)) {
-            LOGGER.debug("Could not find expense with ID {}.", id);
-            return false;
-        }
         try {
-            this.EXPENSE_REPOSITORY.findById(id).ifPresent(this.EXPENSE_REPOSITORY::delete);
-            return true;
-        } catch (Exception e) {
+            Optional<Expense> expense = this.EXPENSE_REPOSITORY.findById(id);
+            if(expense.isPresent()) {
+                this.EXPENSE_REPOSITORY.delete(expense.get());
+                return true;
+            }
+            LOGGER.info("Expense not found. Could not delete expense.");
+            throw new EntryNotFoundException("Expense not found. Could not delete expense.");
+        } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error("Could not delete expense with ID {}. Error: {}", id, e.getLocalizedMessage(), e);
-            return false;
+            throw new EntryNotProcessedException(String.format("Could not delete expense. Error: %s", e.getLocalizedMessage()));
         }
     }
 }
