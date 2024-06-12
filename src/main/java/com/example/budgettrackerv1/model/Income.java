@@ -3,10 +3,11 @@ package com.example.budgettrackerv1.model;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "income")
-public class Income {
+public class Income implements Entry {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false)
@@ -86,6 +87,19 @@ public class Income {
     @SuppressWarnings("unused")
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Income income = (Income) o;
+        return Double.compare(amount, income.amount) == 0 && Objects.equals(id, income.id) && Objects.equals(dateCreated, income.dateCreated) && Objects.equals(datePlanned, income.datePlanned) && category == income.category && Objects.equals(description, income.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dateCreated, datePlanned, category, description, amount);
     }
 
     @Override
