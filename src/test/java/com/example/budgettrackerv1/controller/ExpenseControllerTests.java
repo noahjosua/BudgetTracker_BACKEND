@@ -12,6 +12,8 @@ import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,19 +46,21 @@ public class ExpenseControllerTests {
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
 
-    private Expense createTestExpense() {
-        Expense expense = new Expense();
-        expense.setId(1);
-        expense.setDateCreated(LocalDate.now());
-        expense.setDatePlanned(LocalDate.now());
-        expense.setCategory(Category.GROCERIES);
-        expense.setDescription("Test expense");
-        expense.setAmount(10);
-        return expense;
+    private Expense testExpense;
+
+    @BeforeEach
+    public void setUp() {
+        testExpense = new Expense();
+        testExpense.setId(1);
+        testExpense.setDateCreated(LocalDate.now());
+        testExpense.setDatePlanned(LocalDate.now());
+        testExpense.setCategory(Category.GROCERIES);
+        testExpense.setDescription("Test expense");
+        testExpense.setAmount(10);
     }
 
-    /* GET ALL CATEGORIES */
     @Test
+    @DisplayName("Get Categories - Returns Status 200")
     void getCategories_Status_200() throws Exception {
         List<Category> expectedCategories = Arrays.asList(
                 Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
@@ -67,10 +71,10 @@ public class ExpenseControllerTests {
                 .andExpect(content().string(GSON.toJson(expectedCategories)));
     }
 
-    /* GET ALL EXPENSES BY DATE */
     @Test
+    @DisplayName("Get All Expenses By Date - Returns Status 200")
     void getAllExpensesByDate_Status_200() throws Exception {
-        List<Expense> expenses = List.of(createTestExpense());
+        List<Expense> expenses = List.of(testExpense);
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.of(expenses));
 
         String messageSuccess = GetEntriesByDateHelper.getSuccessMessageForByDateRequest(new Date(), Constants.TYPE_EXPENSES);
@@ -83,6 +87,7 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Get All Expenses By Date - Returns Status 404")
     void getAllExpensesByDate_Status_404() throws Exception {
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.empty());
 
@@ -90,15 +95,14 @@ public class ExpenseControllerTests {
                 .andExpect(status().isNotFound());
     }
 
-    /* SAVE EXPENSE */
     @Test
+    @DisplayName("Save Expense - Returns Status 200")
     void saveExpense_Status_200() throws Exception {
-        Expense expense = createTestExpense();
-        String jsonExpense = GSON.toJson(expense);
+        String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(true);
 
-        String message = String.format("Expense with id %d was saved successfully.", expense.getId());
-        Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+        String message = String.format("Expense with id %d was saved successfully.", testExpense.getId());
+        Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, testExpense);
         String responseJson = GSON.toJson(response);
 
         mockMvc.perform(post("/api/expenses/save")
@@ -109,10 +113,10 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Save Expense - Returns Status 400")
     void saveExpense_Status_400() throws Exception {
-        Expense expense = createTestExpense();
-        expense.setDescription("");
-        String jsonExpense = GSON.toJson(expense);
+        testExpense.setDescription("");
+        String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
 
         mockMvc.perform(post("/api/expenses/save")
@@ -123,9 +127,9 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Save Expense - Returns Status 500")
     void saveExpense_Status_500() throws Exception {
-        Expense expense = createTestExpense();
-        String jsonExpense = GSON.toJson(expense, Expense.class);
+        String jsonExpense = GSON.toJson(testExpense, Expense.class);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
 
         ErrorResponse errorResponse = new ErrorResponse();
@@ -140,15 +144,14 @@ public class ExpenseControllerTests {
                 .andExpect(content().string(responseJson));
     }
 
-    /* UPDATE EXPENSE */
     @Test
+    @DisplayName("Update Expense - Returns Status 200")
     void updateExpense_Status_200() throws Exception {
-        Expense expense = createTestExpense();
-        String jsonExpense = GSON.toJson(expense);
+        String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.update(Mockito.any(Expense.class))).thenReturn(true);
 
-        String message = String.format("Expense with id %d was updated successfully.", expense.getId());
-        Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+        String message = String.format("Expense with id %d was updated successfully.", testExpense.getId());
+        Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, testExpense);
         String responseJson = GSON.toJson(response);
 
         mockMvc.perform(put("/api/expenses/update")
@@ -159,10 +162,10 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Update Expense - Returns Status 400")
     void updateExpense_Status_400() throws Exception {
-        Expense expense = createTestExpense();
-        expense.setDescription("");
-        String jsonExpense = GSON.toJson(expense);
+        testExpense.setDescription("");
+        String jsonExpense = GSON.toJson(testExpense);
 
         when(expenseService.update(Mockito.any(Expense.class))).thenThrow(new EntryNotProcessedException("Description cannot be null or empty."));
         when(expenseService.update(Mockito.any(Expense.class))).thenThrow(new IllegalArgumentException("Description cannot be null or empty."));
@@ -175,10 +178,10 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Update Expense - Returns Status 404")
     void updateExpense_Status_404() throws Exception {
-        Expense expense = createTestExpense();
-        expense.setId(-1);
-        String jsonExpense = GSON.toJson(expense);
+        testExpense.setId(-1);
+        String jsonExpense = GSON.toJson(testExpense);
 
         when(expenseService.update(Mockito.any(Expense.class))).thenThrow(new EntryNotFoundException("Expense not found. Could not update expense."));
 
@@ -189,9 +192,9 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Update Expense - Returns Status 500")
     void updateExpense_Status_500() throws Exception {
-        Expense expense = createTestExpense();
-        String jsonExpense = GSON.toJson(expense);
+        String jsonExpense = GSON.toJson(testExpense);
 
         when(expenseService.update(Mockito.any(Expense.class))).thenReturn(false);
 
@@ -207,8 +210,8 @@ public class ExpenseControllerTests {
                 .andExpect(content().string(responseJson));
     }
 
-    /* DELETE EXPENSE */
     @Test
+    @DisplayName("Delete Expense - Returns Status 200")
     void deleteExpense_Status_200() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenReturn(true);
@@ -221,6 +224,7 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Delete Expense - Returns Status 400")
     void deleteExpense_Status_400() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenThrow(new EntryNotProcessedException("Could not delete expense due to processing error."));
@@ -236,6 +240,7 @@ public class ExpenseControllerTests {
     }
 
     @Test
+    @DisplayName("Delete Expense - Returns Status 404")
     void deleteExpense_Status_404() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenThrow(new EntryNotFoundException("Expense not found. Could not delete expense."));
