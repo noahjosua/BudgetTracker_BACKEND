@@ -27,6 +27,10 @@ public class ValidateEntryHelper {
         );
     }
 
+    public static Map<String, Object> buildResponseBody(String message) {
+        return Map.of(Constants.RESPONSE_MESSAGE_KEY, message);
+    }
+
     public static void isValid(Entry entry) {
         isValidEntry(entry);
     }
@@ -38,7 +42,7 @@ public class ValidateEntryHelper {
         if (entry.getDatePlanned() == null) {
             throw new IllegalArgumentException("Planned Date cannot be null.");
         }
-        if(entry instanceof Expense && !VALID_EXPENSE_CATEGORIES.contains(entry.getCategory())) {
+        if (entry instanceof Expense && !VALID_EXPENSE_CATEGORIES.contains(entry.getCategory())) {
             throw new IllegalArgumentException("Chosen Category is not valid for Expense.");
         }
         if(entry instanceof Income && !VALID_INCOME_CATEGORIES.contains(entry.getCategory())) {

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpServerErrorException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -24,6 +25,14 @@ public class GlobalExceptionHandler {
         response.setCode(HttpStatus.BAD_REQUEST.value());
         response.setMessage(ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InternalServerError.class)
+    public ResponseEntity<ErrorResponse> handleInternalServerError(InternalServerError ex) {
+        ErrorResponse response = new ErrorResponse();
+        response.setCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setMessage(ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler({IllegalArgumentException.class})

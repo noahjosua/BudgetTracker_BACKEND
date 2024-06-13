@@ -4,6 +4,7 @@ import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
 import com.example.budgettrackerv1.exception.EntryNotProcessedException;
 import com.example.budgettrackerv1.exception.EntryNotFoundException;
+import com.example.budgettrackerv1.exception.InternalServerError;
 import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
 import com.example.budgettrackerv1.helper.ValidateEntryHelper;
 import com.example.budgettrackerv1.model.Category;
@@ -14,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,7 @@ import java.util.*;
 public class ExpenseController {
 
     private final ExpenseService EXPENSE_SERVICE;
+
     private final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
@@ -46,7 +49,7 @@ public class ExpenseController {
     }
 
     @GetMapping("/byDate/{date}")
-    public ResponseEntity<String> getExpensesByDate(@PathVariable Date date) {
+    public ResponseEntity<String> getExpensesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
         Optional<LocalDate> firstDay = GetEntriesByDateHelper.getDate(date, Constants.FIRST_DAY_KEY);
         Optional<LocalDate> lastDay = GetEntriesByDateHelper.getDate(date, Constants.LAST_DAY_KEY);
         String messageSuccess = GetEntriesByDateHelper.getSuccessMessageForByDateRequest(date, Constants.TYPE_EXPENSES);
@@ -74,32 +77,36 @@ public class ExpenseController {
             if (isSaved) {
                 String message = String.format("Expense with id %d was saved successfully.", expense.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
             LOGGER.error("Could not save expense. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not save expense. Error: %s.", e.getMessage()));
         }
-        LOGGER.info("Expense could not be saved.");
-        throw new EntryNotProcessedException("Expense could not be saved.");
+        throw new InternalServerError("An unexpected Error occurred. Could not save expense.");
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> update(@RequestBody String jsonExpense, @PathVariable int id) {
+    @PutMapping("/update")
+    public ResponseEntity<String> update(@RequestBody String jsonExpense) {
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
         try {
             ValidateEntryHelper.isValid(expense);
             boolean isUpdated = this.EXPENSE_SERVICE.update(expense);
             if (isUpdated) {
-                String message = String.format("Expense with id %d was updated successfully.", id);
+                String message = String.format("Expense with id %d was updated successfully.", expense.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
             LOGGER.error("Could not update expense. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not update expense. Error: %s.", e.getMessage()));
+        } catch (EntryNotFoundException e) {
+            LOGGER.error("Could not find expense to update. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.notFound().build();
         }
-        String message = String.format("Expense with id %d could not be updated.", id);
-        LOGGER.info(message);
-        throw new EntryNotProcessedException(message);
+        throw new InternalServerError("An unexpected Error occurred. Could not update expense.");
     }
 
     @DeleteMapping("/delete/{id}")
@@ -107,10 +114,11 @@ public class ExpenseController {
         boolean isDeleted = this.EXPENSE_SERVICE.delete(id);
         if (isDeleted) {
             String message = String.format("Expense with id %d was deleted successfully.", id);
+            LOGGER.info(message);
             return ResponseEntity.ok(message);
         }
         String message = String.format("Expense with id %d could not be deleted.", id);
         LOGGER.info(message);
-        throw new EntryNotProcessedException(message);
+        return ResponseEntity.badRequest().body(message);
     }
 }

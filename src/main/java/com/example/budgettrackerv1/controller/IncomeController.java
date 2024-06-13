@@ -3,6 +3,7 @@ package com.example.budgettrackerv1.controller;
 import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.exception.EntryNotFoundException;
 import com.example.budgettrackerv1.exception.EntryNotProcessedException;
+import com.example.budgettrackerv1.exception.InternalServerError;
 import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
@@ -14,6 +15,7 @@ import com.google.gson.GsonBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,6 +29,7 @@ import java.util.*;
 public class IncomeController {
 
     private final IncomeService INCOME_SERVICE;
+
     private final Gson GSON = new GsonBuilder()
             .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
             .create();
@@ -46,7 +49,7 @@ public class IncomeController {
     }
 
     @GetMapping("/byDate/{date}")
-    public ResponseEntity<String> getIncomesByDate(@PathVariable Date date) {
+    public ResponseEntity<String> getIncomesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
         Optional<LocalDate> firstDay = GetEntriesByDateHelper.getDate(date, Constants.FIRST_DAY_KEY);
         Optional<LocalDate> lastDay = GetEntriesByDateHelper.getDate(date, Constants.LAST_DAY_KEY);
         String messageSuccess = GetEntriesByDateHelper.getSuccessMessageForByDateRequest(date, Constants.TYPE_INCOMES);
@@ -58,10 +61,10 @@ public class IncomeController {
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(messageSuccess, optionalIncomes.get());
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
-            LOGGER.info("No Incomes were found for the specified date. Message: {}",messageError);
+            LOGGER.info("No Incomes were found for the specified date. Message: {}", messageError);
             throw new EntryNotFoundException(messageError);
         }
-        LOGGER.info("Could not get dates to query the database. Message: {}",messageError);
+        LOGGER.info("No Incomes were found for the specified date. Message: {}",messageError);
         throw new EntryNotFoundException(messageError);
     }
 
@@ -74,32 +77,36 @@ public class IncomeController {
             if (isSaved) {
                 String message = String.format("Income with id %d was saved successfully.", income.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, income);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
             LOGGER.error("Could not save income. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not save income. Error: %s.", e.getMessage()));
         }
-        LOGGER.info("Income could not be saved.");
-        throw new EntryNotProcessedException("Income could not be saved.");
+        throw new InternalServerError("An unexpected Error occurred. Could not save income.");
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<String> update(@RequestBody String jsonIncome, @PathVariable int id) {
+    @PutMapping("/update")
+    public ResponseEntity<String> update(@RequestBody String jsonIncome) {
         Income income = this.GSON.fromJson(jsonIncome, Income.class);
         try {
             ValidateEntryHelper.isValid(income);
             boolean isUpdated = this.INCOME_SERVICE.update(income);
             if (isUpdated) {
-                String message = String.format("Income with id %d was updated successfully.", id);
+                String message = String.format("Income with id %d was updated successfully.", income.getId());
                 Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, income);
+                LOGGER.info(message);
                 return ResponseEntity.ok(this.GSON.toJson(response));
             }
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
             LOGGER.error("Could not update income. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not update income. Error: %s.", e.getMessage()));
+        } catch (EntryNotFoundException e) {
+            LOGGER.error("Could not find income to update. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.notFound().build();
         }
-        String message = String.format("Income with id %d could not be updated.", id);
-        LOGGER.info(message);
-        throw new EntryNotProcessedException(message);
+        throw new InternalServerError("An unexpected Error occurred. Could not update income.");
     }
 
     @DeleteMapping("/delete/{id}")
@@ -107,10 +114,11 @@ public class IncomeController {
         boolean isDeleted = this.INCOME_SERVICE.delete(id);
         if (isDeleted) {
             String message = String.format("Income with id %d was deleted successfully.", id);
+            LOGGER.info(message);
             return ResponseEntity.ok(message);
         }
         String message = String.format("Income with id %d could not be deleted.", id);
         LOGGER.info(message);
-        throw new EntryNotProcessedException(message);
+        return ResponseEntity.badRequest().body(message);
     }
 }

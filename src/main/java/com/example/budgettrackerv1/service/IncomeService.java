@@ -1,5 +1,7 @@
 package com.example.budgettrackerv1.service;
 
+import com.example.budgettrackerv1.exception.EntryNotFoundException;
+import com.example.budgettrackerv1.exception.EntryNotProcessedException;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.repository.IncomeRepository;
 import org.apache.logging.log4j.LogManager;
@@ -33,36 +35,38 @@ public class IncomeService {
             this.INCOME_REPOSITORY.save(income);
             return true;
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Could not save income. Error: {}",  e.getLocalizedMessage(), e);
-            return false;
+            LOGGER.error("Could not save income. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not save income. Error: %s", e.getLocalizedMessage()));
         }
     }
 
     public boolean update(Income income) {
-        if (!this.INCOME_REPOSITORY.existsById(income.getId())) {
-            LOGGER.debug("Could not find income with ID {}.", income.getId());
-            return false;
-        }
         try {
-            this.INCOME_REPOSITORY.save(income);
-            return true;
+            Optional<Income> incomeOptional = this.INCOME_REPOSITORY.findById(income.getId());
+            if (incomeOptional.isPresent()) {
+                this.delete(income.getId());
+                this.INCOME_REPOSITORY.save(income);
+                return true;
+            }
+            throw new EntryNotFoundException("Income not found. Could not update income.");
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Could not update income with ID {}. Error: {}", income.getAmount(), e.getLocalizedMessage(), e);
-            return false;
+            LOGGER.error("Could not update income. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not update income. Error: %s", e.getLocalizedMessage()));
         }
     }
 
     public boolean delete(int id) {
-        if (!this.INCOME_REPOSITORY.existsById(id)) {
-            LOGGER.debug("Could not find income with ID {}.", id);
-            return false;
-        }
         try {
-            this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
-            return true;
-        } catch (Exception e) {
+            Optional<Income> income = this.INCOME_REPOSITORY.findById(id);
+            if (income.isPresent()) {
+                this.INCOME_REPOSITORY.delete(income.get());
+                return true;
+            }
+            LOGGER.info("Income not found. Could not delete income.");
+            throw new EntryNotFoundException("Income not found. Could not delete income.");
+        } catch (IllegalArgumentException | NullPointerException e) {
             LOGGER.error("Could not delete income with ID {}. Error: {}", id, e.getLocalizedMessage(), e);
-            return false;
+            throw new EntryNotProcessedException(String.format("Could not delete income. Error: %s", e.getLocalizedMessage()));
         }
     }
 }
