@@ -45,7 +45,7 @@ public class ValidateEntryHelper {
         if (entry instanceof Expense && !VALID_EXPENSE_CATEGORIES.contains(entry.getCategory())) {
             throw new IllegalArgumentException("Chosen Category is not valid for Expense.");
         }
-        if (entry instanceof Income && !VALID_INCOME_CATEGORIES.contains(entry.getCategory())) {
+        if(entry instanceof Income && !VALID_INCOME_CATEGORIES.contains(entry.getCategory())) {
             throw new IllegalArgumentException("Chosen Category is not valid for Income.");
         }
         if (entry.getAmount() <= 0) {

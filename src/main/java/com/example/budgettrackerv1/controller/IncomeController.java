@@ -64,7 +64,7 @@ public class IncomeController {
             LOGGER.info("No Incomes were found for the specified date. Message: {}", messageError);
             throw new EntryNotFoundException(messageError);
         }
-        LOGGER.info("Could not get dates to query the database. Message: {}", messageError);
+        LOGGER.info("No Incomes were found for the specified date. Message: {}",messageError);
         throw new EntryNotFoundException(messageError);
     }
 
