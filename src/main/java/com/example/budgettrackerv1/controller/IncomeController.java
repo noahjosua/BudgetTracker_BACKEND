@@ -24,7 +24,6 @@ import java.util.*;
 
 
 @RestController
-@CrossOrigin(origins = Constants.ALLOWED_ORIGIN)
 @RequestMapping(Constants.REQUEST_MAPPING_INCOME)
 public class IncomeController {
 
