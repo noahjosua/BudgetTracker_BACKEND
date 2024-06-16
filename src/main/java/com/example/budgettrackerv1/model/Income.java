@@ -9,7 +9,7 @@ import java.util.Objects;
 @Table(name = "income")
 public class Income implements Entry {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", updatable = false)
     private Integer id;
 
