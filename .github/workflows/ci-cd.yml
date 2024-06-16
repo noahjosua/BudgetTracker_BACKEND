@@ -23,7 +23,7 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: 'BudgetTracker'
+          application_name: 'Budget Tracker'
           environment_name: 'BudgetTracker-env'
           version_label: ${{ github.sha }}
           region: eu-north-1
