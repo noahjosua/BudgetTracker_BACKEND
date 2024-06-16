@@ -1,0 +1,30 @@
+name: Deploy to Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - rel/1.0
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: action/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Build Project
+        run: gradle build -x test
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: 'BudgetTracker'
+          environment_name: 'BudgetTracker-env'
+          version_label: ${{ github.sha }}
+          region: eu-north-1
+          deployment_package: build/libs/budget-tracker-v1-0.0.1-SNAPSHOT.jar
