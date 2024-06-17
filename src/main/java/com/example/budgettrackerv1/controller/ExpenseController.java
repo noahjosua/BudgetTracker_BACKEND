@@ -1,127 +1,124 @@
 package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
-import com.example.budgettrackerv1.MockData;
+import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
+import com.example.budgettrackerv1.exception.EntryNotProcessedException;
+import com.example.budgettrackerv1.exception.EntryNotFoundException;
+import com.example.budgettrackerv1.exception.InternalServerError;
+import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
+import com.example.budgettrackerv1.helper.ValidateEntryHelper;
 import com.example.budgettrackerv1.model.Category;
 import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
-import jakarta.annotation.PostConstruct;
+import com.google.gson.GsonBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.util.*;
 
 
 @RestController
 @CrossOrigin(origins = Constants.ALLOWED_ORIGIN)
+@RequestMapping(Constants.REQUEST_MAPPING_EXPENSE)
 public class ExpenseController {
 
     private final ExpenseService EXPENSE_SERVICE;
-    private final Gson gson = new Gson();
+
+    private final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter())
+            .create();
+
+    private static final Logger LOGGER = LogManager.getLogger(ExpenseController.class);
 
     @Autowired
     public ExpenseController(ExpenseService EXPENSE_SERVICE) {
         this.EXPENSE_SERVICE = EXPENSE_SERVICE;
     }
 
-    @GetMapping("expense/categories")
+    @GetMapping("/categories")
     public ResponseEntity<String> getAllCategories() {
-        List<Category> categories = List.of(
+        return ResponseEntity.ok(this.GSON.toJson(List.of(
                 Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
-        );
-        return ResponseEntity.ok(gson.toJson(categories));
+        )));
     }
 
-    @PostConstruct
-    public void init() {
-        /* Nur zum testen - sollte wieder gelöscht werden */
-        readAllExpensesFromDB();
-        saveExpenseToDB();
-        editExpenseInDB();
-        deleteExpenseFromDB();
-    }
+    @GetMapping("/byDate/{date}")
+    public ResponseEntity<String> getExpensesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
+        Optional<LocalDate> firstDay = GetEntriesByDateHelper.getDate(date, Constants.FIRST_DAY_KEY);
+        Optional<LocalDate> lastDay = GetEntriesByDateHelper.getDate(date, Constants.LAST_DAY_KEY);
+        String messageSuccess = GetEntriesByDateHelper.getSuccessMessageForByDateRequest(date, Constants.TYPE_EXPENSES);
+        String messageError = GetEntriesByDateHelper.getErrorMessageForByDateRequest(date, Constants.TYPE_EXPENSES);
 
-    /* Nur zum sicherstellen, dass DB Zugriff funktioniert - sollte wieder gelöscht werden */
-    public void readAllExpensesFromDB() {
-        System.out.println("#### EXPENSE CONTROLLER - READ FROM DB ####");
-        List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
-        for (Expense expense : expenses) {
-            System.out.println(expense);
-        }
-    }
-
-    public void saveExpenseToDB() {
-        System.out.println("#### EXPENSE CONTROLLER - SAVE TO DB ####");
-        Expense expense = this.gson.fromJson(MockData.json1, Expense.class);
-        System.out.println(expense);
-        this.EXPENSE_SERVICE.save(expense);
-        System.out.println(expense);
-    }
-
-    public void editExpenseInDB() {
-        System.out.println("#### EXPENSE CONTROLLER - EDIT TO DB ####");
-        Expense expenseToEdit = this.EXPENSE_SERVICE.getById(1);
-        System.out.printf("Expense to edit: %s.%n", expenseToEdit);
-        expenseToEdit.setAmount(300.00);
-        System.out.printf("Save updated expense %s.%n", expenseToEdit);
-        this.EXPENSE_SERVICE.save(expenseToEdit);
-    }
-
-    public void deleteExpenseFromDB() {
-        System.out.println("#### EXPENSE CONTROLLER - DELETE FROM DB ####");
-        Expense expense = this.EXPENSE_SERVICE.getById(1);
-        this.EXPENSE_SERVICE.delete(expense.getId());
-    }
-    /* Ende */
-
-    @GetMapping("expenses")
-    public ResponseEntity<String> getAllExpenses() {
-        List<Expense> expenses = this.EXPENSE_SERVICE.getExpenses();
-        if (expenses.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No expenses found.");
-        }
-
-        for (Expense expense : expenses) {
-            System.out.println(expense);
-        }
-        return ResponseEntity.ok(gson.toJson(expenses));
-    }
-
-    @GetMapping("expense/{id}")
-    public ResponseEntity<String> getExpenseById(@PathVariable int id) {
-        if (id <= 0) {
-            return ResponseEntity.badRequest().body("Provided ID is not valid.");
-        }
-        Expense expense;
-        try {
-            expense = this.EXPENSE_SERVICE.getById(id);
-            if (expense == null /*|| expense.isEmpty()*/) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Expense could not be found. "));
+        if (firstDay.isPresent() && lastDay.isPresent()) {
+            Optional<List<Expense>> optionalExpenses = this.EXPENSE_SERVICE.getByDate(firstDay.get(), lastDay.get());
+            if (optionalExpenses.isPresent()) {
+                Map<String, Object> response = ValidateEntryHelper.buildResponseBody(messageSuccess, optionalExpenses.get());
+                return ResponseEntity.ok(this.GSON.toJson(response));
             }
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("Provided ID is not valid.");
+            LOGGER.info("No Expenses were found for the specified date. Message: {}", messageError);
+            throw new EntryNotFoundException(messageError);
         }
-        return ResponseEntity.ok(gson.toJson(expense));
+        LOGGER.info("Could not get dates to query the database. Message: {}", messageError);
+        throw new EntryNotFoundException(messageError);
     }
 
-    @PostMapping("/saveExpense")
+    @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
-        Expense expense = this.gson.fromJson(jsonExpense, Expense.class);
-        System.out.println(expense);
-        this.EXPENSE_SERVICE.save(expense);
-        System.out.println(expense);
-        String message = String.format("Expense with id %d was saved successfully", expense.getId());
-        return ResponseEntity.ok(message);
+        Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
+        try {
+            ValidateEntryHelper.isValid(expense);
+            boolean isSaved = this.EXPENSE_SERVICE.save(expense);
+            if (isSaved) {
+                String message = String.format("Expense with id %d was saved successfully.", expense.getId());
+                Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
+                return ResponseEntity.ok(this.GSON.toJson(response));
+            }
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
+            LOGGER.error("Could not save expense. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not save expense. Error: %s.", e.getMessage()));
+        }
+        throw new InternalServerError("An unexpected Error occurred. Could not save expense.");
     }
 
-    @DeleteMapping("/deleteExpense/{id}")
+    @PutMapping("/update")
+    public ResponseEntity<String> update(@RequestBody String jsonExpense) {
+        Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
+        try {
+            ValidateEntryHelper.isValid(expense);
+            boolean isUpdated = this.EXPENSE_SERVICE.update(expense);
+            if (isUpdated) {
+                String message = String.format("Expense with id %d was updated successfully.", expense.getId());
+                Map<String, Object> response = ValidateEntryHelper.buildResponseBody(message, expense);
+                LOGGER.info(message);
+                return ResponseEntity.ok(this.GSON.toJson(response));
+            }
+        } catch (IllegalArgumentException | EntryNotProcessedException e) {
+            LOGGER.error("Could not update expense. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.badRequest().body(String.format("Could not update expense. Error: %s.", e.getMessage()));
+        } catch (EntryNotFoundException e) {
+            LOGGER.error("Could not find expense to update. Error: {}.", e.getLocalizedMessage(), e);
+            return ResponseEntity.notFound().build();
+        }
+        throw new InternalServerError("An unexpected Error occurred. Could not update expense.");
+    }
+
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
-        this.EXPENSE_SERVICE.delete(id);
-        String message = String.format("Expense with id %d was deleted successfully", id);
-        return ResponseEntity.ok(message);
+        boolean isDeleted = this.EXPENSE_SERVICE.delete(id);
+        if (isDeleted) {
+            String message = String.format("Expense with id %d was deleted successfully.", id);
+            LOGGER.info(message);
+            return ResponseEntity.ok(message);
+        }
+        String message = String.format("Expense with id %d could not be deleted.", id);
+        LOGGER.info(message);
+        return ResponseEntity.badRequest().body(message);
     }
 }

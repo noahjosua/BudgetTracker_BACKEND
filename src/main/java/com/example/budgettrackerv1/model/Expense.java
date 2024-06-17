@@ -2,21 +2,22 @@ package com.example.budgettrackerv1.model;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "expense")
-public class Expense {
+public class Expense implements Entry {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false)
     private Integer id;
 
     @Column(name = "date_created", nullable = false)
-    private Date dateCreated;
+    private LocalDate dateCreated;
 
     @Column(name = "date_planned", nullable = false)
-    private Date datePlanned;
+    private LocalDate datePlanned;
 
     @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -39,22 +40,22 @@ public class Expense {
     }
 
     @SuppressWarnings("unused")
-    public Date getDateCreated() {
+    public LocalDate getDateCreated() {
         return dateCreated;
     }
 
     @SuppressWarnings("unused")
-    public void setDateCreated(Date dateCreated) {
+    public void setDateCreated(LocalDate dateCreated) {
         this.dateCreated = dateCreated;
     }
 
     @SuppressWarnings("unused")
-    public Date getDatePlanned() {
+    public LocalDate getDatePlanned() {
         return datePlanned;
     }
 
     @SuppressWarnings("unused")
-    public void setDatePlanned(Date datePlanned) {
+    public void setDatePlanned(LocalDate datePlanned) {
         this.datePlanned = datePlanned;
     }
 
@@ -86,6 +87,19 @@ public class Expense {
     @SuppressWarnings("unused")
     public void setAmount(double amount) {
         this.amount = amount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Expense expense = (Expense) o;
+        return Double.compare(amount, expense.amount) == 0 && Objects.equals(id, expense.id) && Objects.equals(dateCreated, expense.dateCreated) && Objects.equals(datePlanned, expense.datePlanned) && category == expense.category && Objects.equals(description, expense.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, dateCreated, datePlanned, category, description, amount);
     }
 
     @Override

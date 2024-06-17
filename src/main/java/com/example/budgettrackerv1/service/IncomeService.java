@@ -1,61 +1,72 @@
 package com.example.budgettrackerv1.service;
 
+import com.example.budgettrackerv1.exception.EntryNotFoundException;
+import com.example.budgettrackerv1.exception.EntryNotProcessedException;
 import com.example.budgettrackerv1.model.Income;
 import com.example.budgettrackerv1.repository.IncomeRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
+@SuppressWarnings("LoggingSimilarMessage")
 @Service
 public class IncomeService {
 
     private final IncomeRepository INCOME_REPOSITORY;
+
+    private static final Logger LOGGER = LogManager.getLogger(IncomeService.class);
 
     @Autowired
     public IncomeService(IncomeRepository incomeRepository) {
         this.INCOME_REPOSITORY = incomeRepository;
     }
 
-    public List<Income> getIncomes(){
-        return this.INCOME_REPOSITORY.findAll();
+    public Optional<List<Income>> getByDate(LocalDate start, LocalDate end) {
+        return this.INCOME_REPOSITORY.findAllByLocalDatePlannedBetween(start, end);
     }
 
-    public void save(Income income){
-        this.INCOME_REPOSITORY.save(income);
-    }
-
-    public void delete(int id){
-        if(!this.INCOME_REPOSITORY.existsById(id)){
-            throw new RuntimeException("Income not found");
+    public boolean save(Income income) {
+        try {
+            this.INCOME_REPOSITORY.save(income);
+            return true;
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not save income. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not save income. Error: %s", e.getLocalizedMessage()));
         }
-        this.INCOME_REPOSITORY.findById(id).ifPresent(this.INCOME_REPOSITORY::delete);
     }
 
-    public Income getById(int id){
-        return this.INCOME_REPOSITORY.findById(id).orElseThrow(() -> new RuntimeException("Income not found"));
-    }
-
-    public List<Income> getByPlannedDate(Date date){
-        List<Income> incomesByPlannedDate = new ArrayList<>();
-        for(Income income : this.INCOME_REPOSITORY.findAll()){
-            if(income.getDatePlanned().equals(date)){
-                incomesByPlannedDate.add(income);
+    public boolean update(Income income) {
+        try {
+            Optional<Income> incomeOptional = this.INCOME_REPOSITORY.findById(income.getId());
+            if (incomeOptional.isPresent()) {
+                this.delete(income.getId());
+                this.INCOME_REPOSITORY.save(income);
+                return true;
             }
+            throw new EntryNotFoundException("Income not found. Could not update income.");
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not update income. Error: {}", e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not update income. Error: %s", e.getLocalizedMessage()));
         }
-        return incomesByPlannedDate;
     }
 
-    public List<Income> getByCreatedDate(Date date){
-        List<Income> incomesByCreatedDate = new ArrayList<>();
-        for(Income income : this.INCOME_REPOSITORY.findAll()){
-            if(income.getDateCreated().equals(date)){
-                incomesByCreatedDate.add(income);
+    public boolean delete(int id) {
+        try {
+            Optional<Income> income = this.INCOME_REPOSITORY.findById(id);
+            if (income.isPresent()) {
+                this.INCOME_REPOSITORY.delete(income.get());
+                return true;
             }
+            LOGGER.info("Income not found. Could not delete income.");
+            throw new EntryNotFoundException("Income not found. Could not delete income.");
+        } catch (IllegalArgumentException | NullPointerException e) {
+            LOGGER.error("Could not delete income with ID {}. Error: {}", id, e.getLocalizedMessage(), e);
+            throw new EntryNotProcessedException(String.format("Could not delete income. Error: %s", e.getLocalizedMessage()));
         }
-        return incomesByCreatedDate;
     }
-
 }
