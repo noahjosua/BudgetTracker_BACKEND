@@ -49,7 +49,7 @@ public class ValidateEntryHelper {
             throw new IllegalArgumentException("Chosen Category is not valid for Income.");
         }
         if (entry.getAmount() <= 0) {
-            throw new IllegalArgumentException("Amount cannot be negative.");
+            throw new IllegalArgumentException("Amount cannot be negative");
         }
         if (entry.getDescription() == null || entry.getDescription().trim().isEmpty()) {
             throw new IllegalArgumentException("Description cannot be null or empty");
