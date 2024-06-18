@@ -132,7 +132,7 @@ public class IncomeControllerTests {
     void saveIncome_Status500() throws Exception {
 
         String jsonIncome = GSON.toJson(testIncome);
-        //when(incomeService.save(Mockito.any(Income.class))).thenThrow(new InternalError("An unexpected Error occurred. Could not save income."));
+
         when(incomeService.save(Mockito.any(Income.class))).thenReturn(false);
 
         ErrorResponse errorResponse = new ErrorResponse();
