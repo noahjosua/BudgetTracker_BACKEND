@@ -12,6 +12,9 @@ import com.example.budgettrackerv1.model.Expense;
 import com.example.budgettrackerv1.service.ExpenseService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import java.util.*;
 @RestController
 @CrossOrigin(origins = Constants.ALLOWED_ORIGIN)
 @RequestMapping(Constants.REQUEST_MAPPING_EXPENSE)
+@Tag(name = "Expense", description = "Controller for managing expenses")
 public class ExpenseController {
 
     private final ExpenseService EXPENSE_SERVICE;
@@ -41,6 +45,15 @@ public class ExpenseController {
         this.EXPENSE_SERVICE = EXPENSE_SERVICE;
     }
 
+    @Operation(
+            description = "Get all available expense categories",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    )
+            }
+    )
     @GetMapping("/categories")
     public ResponseEntity<String> getAllCategories() {
         return ResponseEntity.ok(this.GSON.toJson(List.of(
@@ -48,6 +61,20 @@ public class ExpenseController {
         )));
     }
 
+    @Operation(
+            description = "Extracts the month from the specified date (ISO Format: yyyy-MM-dd) and returns all expenses for that month",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Not Found",
+                            responseCode = "404"
+                    )
+            }
+
+    )
     @GetMapping("/byDate/{date}")
     public ResponseEntity<String> getExpensesByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date) {
         Optional<LocalDate> firstDay = GetEntriesByDateHelper.getDate(date, Constants.FIRST_DAY_KEY);
@@ -68,6 +95,24 @@ public class ExpenseController {
         throw new EntryNotFoundException(messageError);
     }
 
+    @Operation(
+            description = "Saves an expense in JSON format. Returns the expense if successful. " +
+                    "Example: {\"dateCreated\":\"2024-06-18\",\"datePlanned\":\"2024-06-26\",\"category\":\"FREE_TIME\",\"description\":\"Test\",\"amount\":3}",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Bad Request",
+                            responseCode = "400"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            responseCode = "500"
+                    )
+            }
+    )
     @PostMapping("/save")
     public ResponseEntity<String> save(@RequestBody String jsonExpense) {
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
@@ -87,6 +132,27 @@ public class ExpenseController {
         throw new InternalServerError("An unexpected Error occurred. Could not save expense.");
     }
 
+    @Operation(
+            description = "Updates an expense in JSON format if the specified expense exists. Returns the expense if successful",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Bad Request",
+                            responseCode = "400"
+                    ),
+                    @ApiResponse(
+                            description = "Not found",
+                            responseCode = "404"
+                    ),
+                    @ApiResponse(
+                            description = "Internal Server Error",
+                            responseCode = "500"
+                    )
+            }
+    )
     @PutMapping("/update")
     public ResponseEntity<String> update(@RequestBody String jsonExpense) {
         Expense expense = this.GSON.fromJson(jsonExpense, Expense.class);
@@ -109,6 +175,19 @@ public class ExpenseController {
         throw new InternalServerError("An unexpected Error occurred. Could not update expense.");
     }
 
+    @Operation(
+            description = "Deletes an expense with a given ID",
+            responses = {
+                    @ApiResponse(
+                            description = "Success",
+                            responseCode = "200"
+                    ),
+                    @ApiResponse(
+                            description = "Bad Request",
+                            responseCode = "400"
+                    )
+            }
+    )
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable int id) {
         boolean isDeleted = this.EXPENSE_SERVICE.delete(id);

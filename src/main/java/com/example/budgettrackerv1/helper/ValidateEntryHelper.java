@@ -27,26 +27,22 @@ public class ValidateEntryHelper {
         );
     }
 
-    public static Map<String, Object> buildResponseBody(String message) {
-        return Map.of(Constants.RESPONSE_MESSAGE_KEY, message);
-    }
-
     public static void isValid(Entry entry) {
         isValidEntry(entry);
     }
 
     private static void isValidEntry(Entry entry) {
         if (entry.getDateCreated() == null) {
-            throw new IllegalArgumentException("Date of creation cannot be null.");
+            throw new IllegalArgumentException("Date of creation cannot be null");
         }
         if (entry.getDatePlanned() == null) {
-            throw new IllegalArgumentException("Planned Date cannot be null.");
+            throw new IllegalArgumentException("Planned Date cannot be null");
         }
         if (entry instanceof Expense && !VALID_EXPENSE_CATEGORIES.contains(entry.getCategory())) {
-            throw new IllegalArgumentException("Chosen Category is not valid for Expense.");
+            throw new IllegalArgumentException("Chosen Category is not valid for Expense");
         }
         if(entry instanceof Income && !VALID_INCOME_CATEGORIES.contains(entry.getCategory())) {
-            throw new IllegalArgumentException("Chosen Category is not valid for Income.");
+            throw new IllegalArgumentException("Chosen Category is not valid for Income");
         }
         if (entry.getAmount() <= 0) {
             throw new IllegalArgumentException("Amount cannot be negative");

@@ -2,7 +2,6 @@ package com.example.budgettrackerv1.controller;
 
 import com.example.budgettrackerv1.Constants;
 import com.example.budgettrackerv1.adapter.LocalDateTypeAdapter;
-import com.example.budgettrackerv1.controller.IncomeController;
 import com.example.budgettrackerv1.exception.EntryNotFoundException;
 import com.example.budgettrackerv1.exception.EntryNotProcessedException;
 import com.example.budgettrackerv1.helper.GetEntriesByDateHelper;
