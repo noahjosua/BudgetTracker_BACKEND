@@ -14,7 +14,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @DataJpaTest
 public class ExpenseRepositoryTests {
 

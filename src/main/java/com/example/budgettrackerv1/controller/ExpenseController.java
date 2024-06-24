@@ -133,7 +133,8 @@ public class ExpenseController {
     }
 
     @Operation(
-            description = "Updates an expense in JSON format if the specified expense exists. Returns the expense if successful",
+            description = "Updates an expense in JSON format if the specified expense exists. Returns the expense if successful. " +
+                    "Example: {\"id\":\"502\",\"dateCreated\":\"2024-06-18\",\"datePlanned\":\"2024-06-26\",\"category\":\"POCKET_MONEY\",\"description\":\"Test\",\"amount\":3}",
             responses = {
                     @ApiResponse(
                             description = "Success",

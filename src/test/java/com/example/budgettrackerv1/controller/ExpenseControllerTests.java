@@ -32,7 +32,6 @@ import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @WebMvcTest(ExpenseController.class)
 public class ExpenseControllerTests {
 
@@ -61,7 +60,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Get Categories - Returns Status 200")
-    void getCategories_Status_200() throws Exception {
+    void getAllCategories_Status_200() throws Exception {
         List<Category> expectedCategories = Arrays.asList(
                 Category.GROCERIES, Category.DRUGSTORE, Category.FREE_TIME, Category.RENT, Category.INSURANCE, Category.SUBSCRIPTIONS, Category.EDUCATION, Category.OTHER
         );
@@ -73,7 +72,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Get All Expenses By Date - Returns Status 200")
-    void getAllExpensesByDate_Status_200() throws Exception {
+    void getExpensesByDate_Status_200() throws Exception {
         List<Expense> expenses = List.of(testExpense);
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.of(expenses));
 
@@ -88,7 +87,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Get All Expenses By Date - Returns Status 404")
-    void getAllExpensesByDate_Status_404() throws Exception {
+    void getExpensesByDate_Status_404() throws Exception {
         when(expenseService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/api/expenses/byDate/" + LocalDate.now()))
@@ -97,7 +96,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Save Expense - Returns Status 200")
-    void saveExpense_Status_200() throws Exception {
+    void save_Status_200() throws Exception {
         String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(true);
 
@@ -114,7 +113,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Save Expense - Returns Status 400")
-    void saveExpense_Status_400() throws Exception {
+    void save_Status_400() throws Exception {
         testExpense.setDescription("");
         String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
@@ -128,7 +127,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Save Expense - Returns Status 500")
-    void saveExpense_Status_500() throws Exception {
+    void save_Status_500() throws Exception {
         String jsonExpense = GSON.toJson(testExpense, Expense.class);
         when(expenseService.save(Mockito.any(Expense.class))).thenReturn(false);
 
@@ -146,7 +145,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Update Expense - Returns Status 200")
-    void updateExpense_Status_200() throws Exception {
+    void update_Status_200() throws Exception {
         String jsonExpense = GSON.toJson(testExpense);
         when(expenseService.update(Mockito.any(Expense.class))).thenReturn(true);
 
@@ -163,7 +162,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Update Expense - Returns Status 400")
-    void updateExpense_Status_400() throws Exception {
+    void update_Status_400() throws Exception {
         testExpense.setDescription("");
         String jsonExpense = GSON.toJson(testExpense);
 
@@ -179,7 +178,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Update Expense - Returns Status 404")
-    void updateExpense_Status_404() throws Exception {
+    void update_Status_404() throws Exception {
         testExpense.setId(-1);
         String jsonExpense = GSON.toJson(testExpense);
 
@@ -193,7 +192,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Update Expense - Returns Status 500")
-    void updateExpense_Status_500() throws Exception {
+    void update_Status_500() throws Exception {
         String jsonExpense = GSON.toJson(testExpense);
 
         when(expenseService.update(Mockito.any(Expense.class))).thenReturn(false);
@@ -212,7 +211,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Delete Expense - Returns Status 200")
-    void deleteExpense_Status_200() throws Exception {
+    void delete_Status_200() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenReturn(true);
 
@@ -225,7 +224,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Delete Expense - Returns Status 400")
-    void deleteExpense_Status_400() throws Exception {
+    void delete_Status_400() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenThrow(new EntryNotProcessedException("Could not delete expense due to processing error."));
 
@@ -241,7 +240,7 @@ public class ExpenseControllerTests {
 
     @Test
     @DisplayName("Delete Expense - Returns Status 404")
-    void deleteExpense_Status_404() throws Exception {
+    void delete_Status_404() throws Exception {
         int expenseId = 1;
         when(expenseService.delete(expenseId)).thenThrow(new EntryNotFoundException("Expense not found. Could not delete expense."));
 

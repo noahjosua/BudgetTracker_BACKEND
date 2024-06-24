@@ -22,7 +22,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @ExtendWith(MockitoExtension.class)
 public class IncomeServiceTests {
 
@@ -58,7 +57,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Incomes Between Given Start and End Dates - Incomes found")
-    void getIncomesByDate_IncomesFound() {
+    void getByDate_ReturnsIncomes() {
 
         LocalDate start = LocalDate.of(2024, 5, 1);
         LocalDate end = LocalDate.of(2024, 7, 31);
@@ -73,7 +72,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Incomes Between Given Start and End Dates - Incomes not found")
-    void getIncomesByDate_NoIncomes() {
+    void getByDate_ReturnsEmptyList() {
 
         LocalDate start = LocalDate.of(2025, 5, 1);
         LocalDate end = LocalDate.of(2025, 7, 31);
@@ -87,7 +86,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Save Income - Success")
-    void saveIncome_Success() {
+    void save_Success() {
 
         Income income = incomesTest.get(0);
         when(incomeRepository.save(income)).thenReturn(income);
@@ -98,7 +97,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Save Income - Fail")
-    void saveIncome_Fail() {
+    void save_ThrowsIllegalArgumentException() {
 
         Income income = incomesTest.get(0);
         String errorMessage = "Saving was unsuccessful";
@@ -115,7 +114,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Update Income - Success")
-    void updateIncome_Success() {
+    void update_Success() {
 
         Income income = incomesTest.get(0);
         Optional<Income> existingIncome = Optional.of(income);
@@ -130,7 +129,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Update Income - Fail Entry not Found")
-    void updateIncome_FailEntryNotFound() {
+    void update_ThrowsEntryNotFoundException() {
 
         Income income = incomesTest.get(0);
 
@@ -147,7 +146,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Update Income - Fail Entry not Processed")
-    void updateIncome_FailEntryNotProcessed() {
+    void update_ThrowsEntryNotProcessedException() {
 
         Income income = incomesTest.get(0);
         String errorMessage = "Processing error";
@@ -166,7 +165,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Delete Income - Success")
-    void deleteIncome_Success() {
+    void delete_Success() {
 
         Income income = incomesTest.get(0);
         Optional<Income> existingIncome = Optional.of(income);
@@ -179,7 +178,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Delete Income - Fail Entry not Found")
-    void deleteIncome_FailEntryNotFound() {
+    void delete_ThrowsEntryNotFoundException() {
         Income income = incomesTest.get(0);
         when(incomeRepository.findById(income.getId())).thenReturn(Optional.empty());
 
@@ -193,7 +192,7 @@ public class IncomeServiceTests {
 
     @Test
     @DisplayName("Delete Income - Fail Entry not Processed")
-    void deleteIncome_FailEntryNotProcessed() {
+    void delete_ThrowsEntryNotProcessedException() {
 
         int id = 1;
         when(incomeRepository.findById(id)).thenThrow(IllegalArgumentException.class);

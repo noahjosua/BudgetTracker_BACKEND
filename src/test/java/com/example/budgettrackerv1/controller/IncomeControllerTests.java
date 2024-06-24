@@ -32,7 +32,6 @@ import java.util.*;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @WebMvcTest(IncomeController.class)
 public class IncomeControllerTests {
 
@@ -61,7 +60,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Get Categories - Status 200")
-    void getAllCategories_Status200() throws Exception {
+    void getAllCategories_Status_200() throws Exception {
 
         List<Category> expected = List.of(Category.SALARY, Category.POCKET_MONEY, Category.ALIMENT, Category.CAPITAL_ASSETS,
                 Category.RENTAL, Category.OTHER);
@@ -74,7 +73,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Get Incomes by date - Status 200")
-    void getIncomesByDate_Status200() throws Exception {
+    void getIncomesByDate_Status_200() throws Exception {
 
         List<Income> expectedList = List.of(testIncome);
 
@@ -90,7 +89,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Get Incomes by date - Status 404")
-    void getIncomesByDate_Status404() throws Exception {
+    void getIncomesByDate_Status_404() throws Exception {
         when(incomeService.getByDate(Mockito.any(LocalDate.class), Mockito.any(LocalDate.class))).thenThrow(EntryNotFoundException.class);
 
         mockMvc.perform(get("/api/incomes/byDate/" + LocalDate.now())).andExpect(status().isNotFound());
@@ -98,7 +97,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Save Income - Status 200")
-    void saveIncome_Status200() throws Exception {
+    void save_Status_200() throws Exception {
 
         String jsonIncome = GSON.toJson(testIncome);
 
@@ -115,7 +114,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Save Income - Status 400")
-    void saveIncome_Status400() throws Exception {
+    void save_Status_400() throws Exception {
 
         testIncome.setAmount(-1);
         String jsonIncome = GSON.toJson(testIncome);
@@ -128,7 +127,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Save Income - Status 500")
-    void saveIncome_Status500() throws Exception {
+    void save_Status_500() throws Exception {
 
         String jsonIncome = GSON.toJson(testIncome);
 
@@ -146,7 +145,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Update Income - Status 200")
-    void updateIncome_Status200() throws Exception {
+    void update_Status_200() throws Exception {
 
         String jsonIncome = GSON.toJson(testIncome);
 
@@ -163,7 +162,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Update Income - Status 400")
-    void updateIncome_Status400() throws Exception {
+    void update_Status_400() throws Exception {
 
         testIncome.setAmount(-1);
 
@@ -179,7 +178,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Update Income - Status 500")
-    void updateIncome_Status500() throws Exception {
+    void update_Status_500() throws Exception {
 
         String jsonIncome = GSON.toJson(testIncome);
 
@@ -197,7 +196,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Delete Income - Status 200")
-    void deleteIncome_Status200() throws Exception {
+    void delete_Status_200() throws Exception {
 
         int id = 1;
         when(incomeService.delete(id)).thenReturn(true);
@@ -211,7 +210,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Delete Income - Status 400")
-    void deleteIncome_Status400() throws Exception {
+    void delete_Status_400() throws Exception {
 
         int id = 1;
 
@@ -229,7 +228,7 @@ public class IncomeControllerTests {
 
     @Test
     @DisplayName("Delete Income - Status 404")
-    void deleteIncome_Status404() throws Exception {
+    void delete_Status_404() throws Exception {
 
         int id = 1;
 

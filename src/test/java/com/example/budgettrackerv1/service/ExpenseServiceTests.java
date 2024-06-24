@@ -22,7 +22,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-/* IMPORTANT: COMMENT OUT INSERT STATEMENTS IN SCHEMA.SQL BEFORE RUNNING TESTS */
 @ExtendWith(MockitoExtension.class)
 public class ExpenseServiceTests {
 
@@ -57,7 +56,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Get Expenses By Date - Returns Expected Expenses")
-    void getExpensesByDate_ReturnsExpenses() {
+    void getByDate_ReturnsExpenses() {
         LocalDate startDate = LocalDate.of(2023, 1, 1);
         LocalDate endDate = LocalDate.of(2023, 1, 31);
 
@@ -71,7 +70,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Get Expenses By Date - Returns Empty List")
-    void getExpensesByDate_ReturnsEmptyList() {
+    void getByDate_ReturnsEmptyList() {
         LocalDate startDate = LocalDate.of(2023, 1, 1);
         LocalDate endDate = LocalDate.of(2023, 1, 31);
         when(expenseRepository.findAllByLocalDatePlannedBetween(startDate, endDate))
@@ -84,7 +83,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Save Expense - Success")
-    void saveExpense_Success() {
+    void save_Success() {
         Expense expense = testExpenses.get(1);
         when(expenseRepository.save(expense)).thenReturn(expense);
 
@@ -96,7 +95,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Save Expense - Throws EntryNotProcessedException")
-    void saveExpense_ThrowsIllegalArgumentException() {
+    void save_ThrowsIllegalArgumentException() {
         Expense expense = testExpenses.get(1);
         String errorMessage = "Invalid argument";
         when(expenseRepository.save(expense)).thenThrow(new IllegalArgumentException(errorMessage));
@@ -111,7 +110,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Update Expense - Success")
-    void updateExpense_Success() {
+    void update_Success() {
         Expense expense = testExpenses.get(1);
         Optional<Expense> existingExpenseOptional = Optional.of(expense);
         when(expenseRepository.findById(expense.getId())).thenReturn(existingExpenseOptional);
@@ -126,7 +125,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Update Expense - Throws EntryNotFoundException")
-    void updateExpense_ThrowsEntryNotFoundException() {
+    void update_ThrowsEntryNotFoundException() {
         Expense expense = testExpenses.get(1);
         when(expenseRepository.findById(expense.getId())).thenReturn(Optional.empty());
 
@@ -141,7 +140,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Update Expense - Throws EntryNotProcessedException")
-    void updateExpense_ThrowsEntryNotProcessedException() {
+    void update_ThrowsEntryNotProcessedException() {
         Expense expense = testExpenses.get(1);
         String errorMessage = "Some processing error";
         when(expenseRepository.findById(expense.getId())).thenReturn(Optional.of(expense));
@@ -158,7 +157,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Delete Expense - Success")
-    void deleteExpense_Success() {
+    void delete_Success() {
         Expense expense = testExpenses.get(1);
         Optional<Expense> existingExpenseOptional = Optional.of(expense);
         when(expenseRepository.findById(expense.getId())).thenReturn(existingExpenseOptional);
@@ -171,7 +170,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Delete Expense - Throws EntryNotFoundException")
-    void deleteExpense_ThrowsEntryNotFoundException() {
+    void delete_ThrowsEntryNotFoundException() {
         Expense expense = testExpenses.get(1);
         when(expenseRepository.findById(expense.getId())).thenReturn(Optional.empty());
 
@@ -185,7 +184,7 @@ public class ExpenseServiceTests {
 
     @Test
     @DisplayName("Delete Expense - Throws EntryNotProcessedException")
-    void deleteExpense_ThrowsEntryNotProcessedException() {
+    void delete_ThrowsEntryNotProcessedException() {
         int expenseId = 1;
         when(expenseRepository.findById(expenseId)).thenThrow(IllegalArgumentException.class);
 

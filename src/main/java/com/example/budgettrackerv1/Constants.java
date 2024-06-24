@@ -10,4 +10,5 @@ public class Constants {
     public static final String LAST_DAY_KEY = "lastDay";
     public static final String TYPE_EXPENSES = "Expenses";
     public static final String TYPE_INCOMES = "Incomes";
+    public static final String DATE_FORMAT = "yyyy-MM-dd";
 }

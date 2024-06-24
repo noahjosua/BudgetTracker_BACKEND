@@ -8,6 +8,10 @@ import com.example.budgettrackerv1.model.Income;
 
 import java.util.*;
 
+/**
+ * Helper class for validating {@link Entry} objects.
+ * Provides methods for building response bodies and validating entries.
+ */
 public class ValidateEntryHelper {
 
     private static final List<Category> VALID_INCOME_CATEGORIES = Arrays.asList(
@@ -20,6 +24,13 @@ public class ValidateEntryHelper {
             Category.EDUCATION, Category.OTHER
     );
 
+    /**
+     * Builds a response body as a map with the given message and entry.
+     *
+     * @param message the response message
+     * @param entry the entry object to include in the response
+     * @return a map representing the response body
+     */
     public static Map<String, Object> buildResponseBody(String message, Object entry) {
         return Map.of(
                 Constants.RESPONSE_MESSAGE_KEY, message,
@@ -31,6 +42,13 @@ public class ValidateEntryHelper {
         isValidEntry(entry);
     }
 
+    /**
+     * Validates the given entry. Checks for null dates, valid categories, non-negative amounts,
+     * and non-null/non-empty descriptions.
+     *
+     * @param entry the entry to be validated
+     * @throws IllegalArgumentException if the entry is not valid
+     */
     private static void isValidEntry(Entry entry) {
         if (entry.getDateCreated() == null) {
             throw new IllegalArgumentException("Date of creation cannot be null");
