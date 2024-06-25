@@ -2,7 +2,6 @@
 
 Description
 -----------
-
 You can use this software to plan finances by creating income and expense entries according to what amount you spent, when you spent it and what you spent it on. 
 The entries you create will be displayed as a list with all the details you added to give you a clear overview of your finances.
 After creating several entries you will be able to see your total incomes and total expenses, as well as your current balance. 
