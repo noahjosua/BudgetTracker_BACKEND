@@ -11,7 +11,6 @@ Additionally, you are able to delete and completely edit previously created entr
 
 
 
-
 Installation
 ------------
 
@@ -26,7 +25,7 @@ Requirements:
 
 - You'll need an IDE. For example: VS Code, IntelliJ IDE, Webstorm...
 
-- Type "npm install" in your console to ensure that you are not missing anything.
+- Type "npm install" in your console to ensure that you are not missing any packages.
 
 ---> make sure you restart your computer after installing!
 
@@ -41,7 +40,6 @@ Password: password
 
 
 
-
 Running the Application
 -----------------------
 
@@ -49,9 +47,15 @@ Running the Application
 
 
 
+Documentation
+-----------------------
+
+- To see the documentation, go to "localhost:8080/swagger-ui/index.html"
+
 
 
 Authors
 -------
 Noah-Josua Hartmann, Michelle Koops, Avery Lönker, Laura Siekierksi
+
 
