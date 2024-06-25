@@ -13,6 +13,11 @@ public class ErrorResponse {
         this.message = message;
     }
 
+    @SuppressWarnings("unused") // used by Tests
+    public int getCode() {
+        return code;
+    }
+
     public void setCode(int code) {
         this.code = code;
     }
