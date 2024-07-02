@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS income
     date_planned DATE NOT NULL,
     category    VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    amount      DECIMAL(10, 2) /* TODO muss frontend eingabe möglichkeit matchen */
+    amount      DECIMAL(10, 2)
     );
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS expense
     date_planned DATE NOT NULL,
     category    VARCHAR(255) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    amount      DECIMAL(10, 2) /* TODO muss frontend eingabe möglichkeit matchen */
+    amount      DECIMAL(10, 2)
     );
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
