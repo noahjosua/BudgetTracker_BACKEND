@@ -11,19 +11,19 @@ CREATE TABLE IF NOT EXISTS income
     );
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'SALARY', 'Test 1', 2.50);
+VALUES (CURDATE(), CURDATE(), 'SALARY', 'Test 1', 2.50);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'POCKET_MONEY', 'Test 1', 2.50);
+VALUES (CURDATE(), CURDATE(), 'POCKET_MONEY', 'Test 1', 2.50);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'ALIMENT', 'Test 3', 2.50);
+VALUES (CURDATE(), CURDATE(), 'ALIMENT', 'Test 3', 2.50);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'CAPITAL_ASSETS', 'Test 4', 2.50);
+VALUES (CURDATE(), CURDATE(), 'CAPITAL_ASSETS', 'Test 4', 2.50);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'RENTAL', 'Test 5', 2.50);
+VALUES (CURDATE(), CURDATE(), 'RENTAL', 'Test 5', 2.50);
 
 /* EXPENSE */
 
@@ -40,16 +40,16 @@ CREATE TABLE IF NOT EXISTS expense
     );
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'GROCERIES', 'Buch 1', 2.50);
+VALUES (CURDATE(), CURDATE(), 'GROCERIES', 'Buch 1', 2.50);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'DRUGSTORE', 'Buch 2', 2.50);
+VALUES (CURDATE(), CURDATE(), 'DRUGSTORE', 'Buch 2', 2.50);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'FREE_TIME', 'Buch 3', 2.50);
+VALUES (CURDATE(), CURDATE(), 'FREE_TIME', 'Buch 3', 2.50);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'RENT', 'Buch 4', 2.50);
+VALUES (CURDATE(), CURDATE(), 'RENT', 'Buch 4', 2.50);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
-VALUES (CURRENT_DATE, CURRENT_DATE, 'EDUCATION', 'Buch 5', 2.50);
+VALUES (CURDATE(), CURDATE(), 'EDUCATION', 'Buch 5', 2.50);
