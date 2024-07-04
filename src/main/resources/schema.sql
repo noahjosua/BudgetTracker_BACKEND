@@ -3,12 +3,12 @@ DROP TABLE IF EXISTS income;
 CREATE TABLE IF NOT EXISTS income
 (
     id           SERIAL PRIMARY KEY,
-    date_created DATE NOT NULL,
-    date_planned DATE NOT NULL,
-    category    VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    amount      DECIMAL(10, 2)
-    );
+    date_created DATE         NOT NULL,
+    date_planned DATE         NOT NULL,
+    category     VARCHAR(255) NOT NULL,
+    description  VARCHAR(255) NOT NULL,
+    amount       DECIMAL(10, 2)
+);
 
 INSERT INTO income (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_DATE, CURRENT_DATE, 'SALARY', 'Test 1', 2.50);
@@ -32,12 +32,12 @@ DROP TABLE IF EXISTS expense;
 CREATE TABLE IF NOT EXISTS expense
 (
     id           SERIAL PRIMARY KEY,
-    date_created DATE NOT NULL,
-    date_planned DATE NOT NULL,
-    category    VARCHAR(255) NOT NULL,
-    description VARCHAR(255) NOT NULL,
-    amount      DECIMAL(10, 2)
-    );
+    date_created DATE         NOT NULL,
+    date_planned DATE         NOT NULL,
+    category     VARCHAR(255) NOT NULL,
+    description  VARCHAR(255) NOT NULL,
+    amount       DECIMAL(10, 2)
+);
 
 INSERT INTO expense (date_planned, date_created, category, description, amount)
 VALUES (CURRENT_DATE, CURRENT_DATE, 'GROCERIES', 'Buch 1', 2.50);
